@@ -429,7 +429,7 @@ find.clonotypes <- function (.data, .targets, .method = c('exact', 'hamm', 'lev'
 #' immdata.top <- top.cross(immdata)
 #' top.cross.plot(immdata.top)
 #' }
-top.cross <- function (.data, .n = NA, .data2 = NULL, .type = 'ave', .norm = F, .verbose = T) {  
+top.cross <- function (.data, .n = NA, .data2 = NULL, .type = 'ave', .norm = F, .verbose = T) {
   if (!is.null(.data2)) { .data <- list(.data, .data2) }
   
   if (is.na(.n)[1]) { .n <- seq(5000, min(sapply(.data, nrow)), 5000) }
@@ -527,21 +527,23 @@ bootstrap.tcr <- function (.data, .fun = entropy.seg, .n = 1000,
                            .postfun = function (x) { unlist(x) }, .verbose = T,
                            ...) {
   
+  .sample.fun <- function (d) {
+    d[sample(1:nrow(d), .size, T),]
+  }
+  
   if (.sim[1] == 'percentage') {
     .sample.fun <- function (d) {
-#       new.perc <- rmultinom(1, .size, d$Percentage)
-      d[rmultinom(1, .size, d$Percentage) > 0,]
-    }
-  } else {
-    .sample.fun <- function (d) {
-      d[sample(1:nrow(d), .size, T),]
+      new.reads <- rmultinom(1, .size, d$Percentage)
+      d$Read.count <- new.reads
+      d$Percentage <- new.reads / sum(new.reads)
+      d[new.reads > 0,]
     }
   }
   
   if (.verbose) { pb <- set.pb(.n) }
   res <- lapply(1:.n, function (n) {
     if (.verbose) { add.pb(pb) }
-    .fun(.sample.fun(.data))
+    .fun(.sample.fun(.data), ...)
   })
   if (.verbose) { close(pb) }
 

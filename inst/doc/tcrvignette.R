@@ -239,7 +239,7 @@ top.cross.plot(twb.top)
 
 
 ###################################################
-### code chunk number 26: tcrvignette.Rnw:373-379
+### code chunk number 26: tcrvignette.Rnw:373-381
 ###################################################
 # Evaluate the diversity of clones by the ecological diversity index.
 sapply(twb, function (x) diversity(x$Read.count))
@@ -247,10 +247,12 @@ sapply(twb, function (x) diversity(x$Read.count))
 sapply(twb, function (x) inverse.simpson(x$Read.count))
 # Evaluate the skewness of clonal distribution.
 sapply(twb, function (x) gini(x$Read.count))
+# Compute diversity of repertoire using Chao index.
+t(sapply(twb, function (x) chao1(x$Read.count)))
 
 
 ###################################################
-### code chunk number 27: tcrvignette.Rnw:397-400
+### code chunk number 27: tcrvignette.Rnw:399-402
 ###################################################
 cols <- c('CDR3.amino.acid.sequence', 'Read.count')
 # Apply the Morisitas overlap index to the each pair of repertoires.
@@ -258,7 +260,7 @@ apply.symm(twb, function (x,y) morisitas.index(x[, cols], y[, cols]), .verbose =
 
 
 ###################################################
-### code chunk number 28: tcrvignette.Rnw:414-424
+### code chunk number 28: tcrvignette.Rnw:416-426
 ###################################################
                               # Transform "0:100" to distribution with Laplace correction 
 entropy(0:100, .laplace = 1)  # (i.e., add "1" to every value before transformation).
@@ -273,14 +275,14 @@ vis.radarlike(imm.js, .ncol = 2)
 
 
 ###################################################
-### code chunk number 29: tcrvignette.Rnw:430-432
+### code chunk number 29: tcrvignette.Rnw:432-434
 ###################################################
 pca.segments(twb)                       # Plot PCA results of V-segment usage.
 class(pca.segments(twb, .do.plot = F))  # Return object of class "prcomp"
 
 
 ###################################################
-### code chunk number 30: tcrvignette.Rnw:438-445
+### code chunk number 30: tcrvignette.Rnw:440-447
 ###################################################
 # Compute shared repertoire of amino acid CDR3 sequences and V-segments
 # which has been found in two or more people.
@@ -292,7 +294,7 @@ cosine.sharing(imm.shared)         # Compute cosing similarity on shared sequenc
 
 
 ###################################################
-### code chunk number 31: tcrvignette.Rnw:455-458
+### code chunk number 31: tcrvignette.Rnw:457-460
 ###################################################
 p1 <- vis.count.len(twb[[1]])
 p2 <- vis.number.count(twb[[1]])
@@ -300,21 +302,21 @@ grid.arrange(p1, p2, ncol = 2)
 
 
 ###################################################
-### code chunk number 32: tcrvignette.Rnw:478-480
+### code chunk number 32: tcrvignette.Rnw:480-482
 ###################################################
 imm.pca <- pca.segments(twb, scale. = T, .do.plot = F)
 vis.pca(imm.pca, list(AB = c(1,2), CD = c(3,4)))
 
 
 ###################################################
-### code chunk number 33: tcrvignette.Rnw:491-493
+### code chunk number 33: tcrvignette.Rnw:493-495
 ###################################################
 head(get.kmers(twb[[1]]$CDR3.amino.acid.sequence, 100, .meat = F, .verbose = F))
 head(get.kmers(twb[[1]], .meat = T, .verbose = F))
 
 
 ###################################################
-### code chunk number 34: tcrvignette.Rnw:503-506
+### code chunk number 34: tcrvignette.Rnw:505-508
 ###################################################
 revcomp(c('AAATTT', 'ACGTTTGGA'))
 cbind(bunch.translate(twb[[1]]$CDR3.nucleotide.sequence[1:10]), twb[[1]]$CDR3.amino.acid.sequence[1:10])
@@ -322,7 +324,7 @@ gc.content(twb[[1]]$CDR3.nucleotide.sequence[1:10])
 
 
 ###################################################
-### code chunk number 35: tcrvignette.Rnw:512-518
+### code chunk number 35: tcrvignette.Rnw:514-520
 ###################################################
 codon.variants('LQ')
 translated.nucl.sequences(c('LQ', 'CASSLQ'))
