@@ -2,21 +2,54 @@
 % Please edit documentation in R/docdata.R
 \docType{data}
 \name{segments.alphabets}
-\alias{J_ALPHA_ALPHABET}
-\alias{J_BETA_ALPHABET}
-\alias{V_ALPHA_ALPHABET}
-\alias{V_BETA_ALPHABET}
+\alias{HUMAN_TRAJ_ALPHABET}
+\alias{HUMAN_TRAV_ALPHABET}
+\alias{HUMAN_TRBD_ALPHABET}
+\alias{HUMAN_TRBJ_ALPHABET}
+\alias{HUMAN_TRBV_ALPHABET}
+\alias{HUMAN_TRBV_ALPHABET_MITCR}
+\alias{HUMAN_TRDD_ALPHABET}
+\alias{HUMAN_TRDJ_ALPHABET}
+\alias{HUMAN_TRDV_ALPHABET}
+\alias{HUMAN_TRGJ_ALPHABET}
+\alias{HUMAN_TRGV_ALPHABET}
+\alias{genealphabets}
 \alias{segments.alphabets}
-\title{Alphabets of V-J segments.}
-\format{Each \code{*_*_ALPHABET} is a character vector.}
+\title{Alphabets of TCR and Ig gene segments.}
+\format{Each \code{<SPECIES>_<GENES>_ALPHABET} is a character vector. <SPECIES> is an identifier of species, <GENES> is concatenated three
+identifiers of cell type ("TR**" for TCR, "IG**" for Ig), chain (e.g., "**A*" for alpha chains) and gene segment ("***V" for V(ariable) gene segment,
+"***J" for J(oining) gene segment, "***D" for D(iversity) gene segment).}
+\usage{
+HUMAN_TRAV_ALPHABET
+
+HUMAN_TRAJ_ALPHABET
+
+HUMAN_TRBV_ALPHABET
+
+HUMAN_TRBD_ALPHABET
+
+HUMAN_TRBJ_ALPHABET
+
+HUMAN_TRBV_ALPHABET_MITCR
+
+HUMAN_TRGV_ALPHABET
+
+HUMAN_TRGJ_ALPHABET
+
+HUMAN_TRDV_ALPHABET
+
+HUMAN_TRDD_ALPHABET
+
+HUMAN_TRDJ_ALPHABET
+}
 \description{
-Character vector with names for segments. With \code{tcR} we provided
-two dataset of segments for humans ("./data/human.alphabets.rda") and mouses ("./data/mouse.alphabets.rda").
+Character vector with names for segments. With \code{tcR} we provided alphabets for all alpha, beta,
+gamma and delta chains gene segments.
 }
 \examples{
 \dontrun{
-data(human.alphabets)
-V_BETA_ALPHABET[1]  #  => "TRBV10-1"
+HUMAN_TRBV_ALPHABET[1]  #  => "TRBV10-1"
 }
 }
+\keyword{datasets}
 

@@ -10,28 +10,34 @@
 #' they length are divisible by 3 (len mod 3 == 0 => in-frame, else out-of-frame)
 #' 
 #' @usage
-#' get.inframes(.data, .head = 0)
+#' get.inframes(.data, .head = 0, .coding = T)
 #' 
 #' get.outframes(.data, .head = 0)
 #' 
-#' count.inframes(.data, .head = 0)
+#' count.inframes(.data, .head = 0, .coding = T)
 #' 
 #' count.outframes(.data, .head = 0)
 #' 
-#' get.frames(.data, .frame = c('in', 'out', 'all'), .head = 0)
+#' get.frames(.data, .frame = c('in', 'out', 'all'), .head = 0, .coding = T)
 #' 
-#' count.frames(.data, .frame = c('in', 'out', 'all'), .head = 0)
+#' count.frames(.data, .frame = c('in', 'out', 'all'), .head = 0, .coding = T)
 #' 
 #' @param .data MiTCR data.frame or a list with mitcr data.frames.
 #' @param .frame Which *-frames to choose.
 #' @param .head Parameter to the head() function. Supply 0 to get all elements. \code{head} applied before subsetting, i.e.
 #' if .head == 500, you will get in-frames from the top 500 clonotypes.
+#' @param .coding If T than return only coding sequences, i.e. without stop-codon.
 #' 
 #' @return Filtered data.frame or a list with such data.frames.
-get.inframes <- function (.data, .head = 0) { 
+get.inframes <- function (.data, .head = 0, .coding = T) { 
   if (class(.data) == 'list') { return(lapply(.data, get.inframes, .head = .head)) }
   .data <- head(.data, if (.head == 0) {nrow(.data)} else {.head})
-  subset(.data, nchar(.data$CDR3.nucleotide.sequence) %% 3 == 0)
+  if (.coding) {
+    d <- subset(.data, nchar(.data$CDR3.nucleotide.sequence) %% 3 == 0)
+    d[grep('[*, ~]', d$CDR3.amino.acid.sequence, invert = T), ]
+  } else {
+    subset(.data, nchar(.data$CDR3.nucleotide.sequence) %% 3 == 0)
+  }
 }
 
 get.outframes <- function (.data, .head = 0) {
@@ -40,8 +46,8 @@ get.outframes <- function (.data, .head = 0) {
   subset(.data, nchar(.data$CDR3.nucleotide.sequence) %% 3 != 0)
 }
 
-count.inframes <- function (.data, .head = 0) {
-  if (class(.data) == 'list') { sapply(get.inframes(.data, .head), nrow) }
+count.inframes <- function (.data, .head = 0, .coding = T) {
+  if (class(.data) == 'list') { sapply(get.inframes(.data, .head, .coding), nrow) }
   else { nrow(get.inframes(.data, .head)) }
 }
 
@@ -50,14 +56,14 @@ count.outframes <- function (.data, .head = 0) {
   else { nrow(get.outframes(.data, .head)) }
 }
 
-get.frames <- function (.data, .frame = c('in', 'out', 'all'), .head = 0) {
-  if (.frame[1] == 'in') { get.inframes(.data, .head) }
+get.frames <- function (.data, .frame = c('in', 'out', 'all'), .head = 0, .coding = T) {
+  if (.frame[1] == 'in') { get.inframes(.data, .head, .coding) }
   else if (.frame[1] == 'out') { get.outframes(.data, .head) }
   else { head(.data, if (.head == 0) {nrow(.data)} else {.head}) }
 }
 
-count.frames <- function (.data, .frame = c('in', 'out', 'all'), .head = 0) {
-  if (.frame[1] == 'in') { count.inframes(.data, .head) }
+count.frames <- function (.data, .frame = c('in', 'out', 'all'), .head = 0, .coding = T) {
+  if (.frame[1] == 'in') { count.inframes(.data, .head, .coding) }
   else if (.frame[1] == 'out') { count.outframes(.data, .head) }
   else { nrow(head(.data, if (.head == 0) {nrow(.data)} else {.head})) }
 }
@@ -72,19 +78,16 @@ clonotypescount <- function(.data, .head = 0) {
 #' @aliases mitcr.stats lib.mitcr.stats
 #' 
 #' @usage
-#' mitcr.stats(.data, .head = 0, .col = 'Read.count')
+#' mitcr.stats(.data, .head = 0)
 #' 
-#' lib.mitcr.stats(.data, .head = 0, .umi = NA)
+#' lib.mitcr.stats(.data, .head = 0)
 #' 
 #' @description
 #' Compute basic statistics of TCR repertoires: number of clones, number of clonotypes, 
-#' number of in-frame and out-of-frame sequences, summary of "Read.count" and other.
+#' number of in-frame and out-of-frame sequences, summary of "Read.count", "Barcode.count" and other.
 #' 
-#' @param .data MiTCr data frames or a list with MiTCR data frames.
+#' @param .data tcR data frames or a list with tcR data frames.
 #' @param .head How many top clones use to comput summary.
-#' @param .col Which columns to use to compute statistics.
-#' @param .umi If T than use both "Barcode.count" and "Read.count" columns. If NA than check if 
-#' "Barcode.count" in columns' names.
 #' 
 #' @return if \code{.data} is a data frame, than numeric vector with statistics. If \code{.data} is 
 #' a list with data frames, than matrix with statistics for each data frame.
@@ -95,9 +98,9 @@ clonotypescount <- function(.data, .head = 0) {
 #' mitcr.stats(immdata)
 #' lib.mitcr.stats(immdata)
 #' }
-mitcr.stats <- function (.data, .head = 0, .col = 'Read.count') {
+mitcr.stats <- function (.data, .head = 0) {
   if (has.class(.data, 'list')) {
-    res <- t(do.call(cbind, lapply(.data, mitcr.stats, .head = .head, .col = .col)))
+    res <- t(do.call(cbind, lapply(.data, mitcr.stats, .head = .head)))
     row.names(res) <- names(.data)
     return(res)
   }
@@ -112,23 +115,25 @@ mitcr.stats <- function (.data, .head = 0, .col = 'Read.count') {
   names(res) <- c('#Nucleotide clones','#Aminoacid clonotypes', '%Aminoacid clonotypes', '#In-frames', '%In-frames', '#Out-of-frames', '%Out-of-frames')
   
   .data <- head(.data, .head)
-  res2 <- c(Sum = sum(.data[, .col]), summary(.data[, .col]))
+  res2 <- c(Sum = sum(.data$Read.count), summary(.data$Read.count))
   names(res2) <- sub('.', '', names(res2), fixed = T)
-  names(res2) <- paste0(names(res2), '.', .col)
+  names(res2) <- paste0(names(res2), '.reads')
+  if (!is.na(.data$Barcode.count)[1]) {
+    res3 <- c(Sum = sum(.data$Barcode.count), summary(.data$Barcode.count))
+    names(res3) <- sub('.', '', names(res3), fixed = T)
+    names(res3) <- paste0(names(res3), '.barcodes')
+    res2 <- c(res2, res3)
+  }
   c(res, res2)
 }
 
-lib.mitcr.stats = function(.data, .head=0, .umi = NA) {
-  ##returns #clones, #barcodes, #reads and reads-per-clone (default) or reads-per-barcode, barcode-per-clone (if .umi=T)
+lib.mitcr.stats = function(.data, .head=0) {
   if (has.class(.data, "list")) {
-    res=do.call(cbind, lapply(.data, lib.mitcr.stats, .head=.head, .umi = .umi))
+    res=do.call(cbind, lapply(.data, lib.mitcr.stats, .head=.head))
     dimnames(res)[[2]]=names(.data)
     return(t(res))
   }else{
-    if (is.na(.umi)) {
-      .umi <- 'Barcode.count' %in% names(.data)
-    }
-    
+    .umi <- !is.na(.data$Barcode.count[1])
     .head= if (.head==0){nrow(.data)} else {.head}
     .data=head(.data, .head)
     if (!.umi) {
@@ -176,8 +181,8 @@ lib.mitcr.stats = function(.data, .head=0, .umi = NA) {
 #' # for each V-segment using all V-segments in the given data frame.
 #' column.summary(immdata[[1]], 'V.segments', 'Total.insertions')
 #' # Compute summary statistics of VD insertions for each V-segment using only V-segments
-#' # from the V_BETA_ALPHABET
-#' column.summary(immdata[[1]], 'V.segments', 'Total.insertions', V_BETA_ALPHABET)
+#' # from the HUMAN_TRBV_ALPHABET_MITCR
+#' column.summary(immdata[[1]], 'V.segments', 'Total.insertions', HUMAN_TRBV_ALPHABET_MITCR)
 #' }
 column.summary <- function (.data, .factor.col, .target.col, .alphabet = NA, .remove.neg = T) {
   if (length(.alphabet) != 0 && !is.na(.alphabet[1])) {
@@ -199,11 +204,11 @@ insertion.stats <- function (.data) {
   if (class(.data) == 'list') {
     return(lapply(.data, insertion.stats))
   }
-  vd <- column.summary(.data, 'V.segments', 'VD.insertions', V_BETA_ALPHABET)
+  vd <- column.summary(.data, 'V.segments', 'VD.insertions', HUMAN_TRBV_ALPHABET_MITCR)
   names(vd)[-1] <- paste0('VD.', names(vd)[-1])
-  dj <- column.summary(.data, 'V.segments', 'DJ.insertions', V_BETA_ALPHABET)
+  dj <- column.summary(.data, 'V.segments', 'DJ.insertions', HUMAN_TRBV_ALPHABET_MITCR)
   names(dj)[-1] <- paste0('DJ.', names(dj)[-1])
-  tot <- column.summary(.data, 'V.segments', 'Total.insertions', V_BETA_ALPHABET)
+  tot <- column.summary(.data, 'V.segments', 'Total.insertions', HUMAN_TRBV_ALPHABET_MITCR)
   names(tot)[-1] <- paste0('Total.', names(tot)[-1])
   res <- merge(vd, dj, by = 'V.segments', all = T)
   res <- merge(res, tot, by = 'V.segments', all = T)
@@ -273,6 +278,7 @@ find.clonotypes <- function (.data, .targets, .method = c('exact', 'hamm', 'lev'
     if (length(.target.col) ==  1) {
       inds <- intersectIndices(.targets, .data[[i]][, .target.col], .method)
     } else {
+      colnames(.targets) <- .target.col
       inds <- intersectIndices(.targets, .data[[i]][, .target.col], .method, .target.col)
     }
 
@@ -348,7 +354,7 @@ find.clonotypes <- function (.data, .targets, .method = c('exact', 'hamm', 'lev'
   }
   for (i in 1:length(.col.name)) {
     if (.col.name[i] %in% names(res)) {
-      setnames(res, .col.name[i], paste0(names(dt.list)[length(dt.list)], '.', .col.name[i]))
+      setnames(res, .col.name[i], paste0(.col.name[i], '.', names(dt.list)[length(dt.list)]))
     }
   }
   res <- as.data.frame(res, stringsAsFactors = F)
@@ -507,6 +513,7 @@ top.cross.plot <- function (.top.cross.res, .xlab = 'Top clones', .ylab = 'Norma
 #' "uniform" or "percentage". See "Details" for more details of type of simulation.
 #' @param .postfun Function applied to the resulting list: list of results from each processed sample.
 #' @param .verbose If T than show progress bar.
+#' @param .prop.col Column with proportions for each clonotype.
 #' @param ... Further values passed to \code{.fun}.
 #' 
 #' @return
@@ -515,7 +522,7 @@ top.cross.plot <- function (.top.cross.res, .xlab = 'Top clones', .ylab = 'Norma
 #' @details
 #' Argument \code{.sim} can take two possible values: "uniform" (for uniform distribution), when
 #' each row can be taken with equal probability, and "perccentage" when each row can be taken with
-#' probability equal to its "Percentage" column.
+#' probability equal to its "Read.proportion" column.
 #' 
 #' @examples
 #' \dontrun{
@@ -524,7 +531,7 @@ top.cross.plot <- function (.top.cross.res, .xlab = 'Top clones', .ylab = 'Norma
 #' }
 bootstrap.tcr <- function (.data, .fun = entropy.seg, .n = 1000,
                            .size = nrow(.data), .sim = c('uniform', 'percentage'),
-                           .postfun = function (x) { unlist(x) }, .verbose = T,
+                           .postfun = function (x) { unlist(x) }, .verbose = T, .prop.col = 'Read.proportion',
                            ...) {
   
   .sample.fun <- function (d) {
@@ -533,9 +540,9 @@ bootstrap.tcr <- function (.data, .fun = entropy.seg, .n = 1000,
   
   if (.sim[1] == 'percentage') {
     .sample.fun <- function (d) {
-      new.reads <- rmultinom(1, .size, d$Percentage)
+      new.reads <- rmultinom(1, .size, d[, .prop.col])
       d$Read.count <- new.reads
-      d$Percentage <- new.reads / sum(new.reads)
+      d[, .prop.col] <- new.reads / sum(new.reads)
       d[new.reads > 0,]
     }
   }
@@ -548,4 +555,54 @@ bootstrap.tcr <- function (.data, .fun = entropy.seg, .n = 1000,
   if (.verbose) { close(pb) }
 
   .postfun(res)
+}
+
+
+# mean + IQR
+#' Clonal space homeostasis.
+#' 
+#' @description
+#' Compute clonal space homeostatsis - statistics of how many space occupied by clones
+#' with specific proportions.
+#' 
+#' @param .data Cloneset data frame or list with such data frames.
+#' @param .clone.types Named numeric vector.
+#' @param .prop.col Which column to use for counting proportions.
+#' 
+#' @seealso \link{vis.clonal.space}
+#' 
+#' @examples
+#' \dontrun{
+#' data(twb)
+#' # Compute summary space of clones, that occupy
+#' # [0, .05) and [.05, 1] proportion.
+#' clonal.space.homeostasis(twb, c(Low = .05, High = 1)))
+#' #        Low (0 < X <= 0.05) High (0.05 < X <= 1)
+#' # Subj.A           0.9421980           0.05780198
+#' # Subj.B           0.9239454           0.07605463
+#' # Subj.C           0.8279270           0.17207296
+#' # Subj.D           1.0000000           0.00000000
+#' # I.e., for Subj.D sum of all read proportions for clones
+#' # which have read proportion between 0 and .05 is equal to 1.
+#' }
+clonal.space.homeostasis <- function (.data, .clone.types = c(Rare = .00001,
+                                                              Small = .0001,
+                                                              Medium = .001,
+                                                              Large = .01,
+                                                              Hyperexpanded = 1),
+                                      .prop.col = 'Read.proportion') {
+  .clone.types <- c(None = 0, .clone.types)
+  
+  if (has.class(.data, 'data.frame')) {
+    .data <- list(Data = .data)
+  }
+  
+  mat <- matrix(0, length(.data), length(.clone.types) - 1, dimnames = list(names(.data), names(.clone.types)[-1]))
+  .data <- lapply(.data, '[[', .prop.col)
+  for (i in 2:length(.clone.types)) {
+    mat[,i-1] <- sapply(.data, function (x) sum(x[x > .clone.types[i-1] & x <= .clone.types[i]]))
+    colnames(mat)[i-1] <- paste0(names(.clone.types[i]), ' (', .clone.types[i-1], ' < X <= ', .clone.types[i], ')')
+  }
+  
+  mat
 }

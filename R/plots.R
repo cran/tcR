@@ -2,9 +2,9 @@
 
 
 if (getRversion() >= "2.15.1") {
-  utils::globalVariables(c("Segment", 'Size', 'Freq', 'Subject', 'V.segments', 'J.segments', '..count..', 'Time.point', 'Percentage', 'Sequence',
+  utils::globalVariables(c("Segment", 'Size', 'Freq', 'Subject', 'V.segments', 'J.segments', '..count..', 'Time.point', 'Proportion', 'Sequence',
                            'Lower', 'Upper', 'Lengths', 'Read.count', 'Var', 'Value', 'Group', 'variable', 'name', 'value', 'Kmers',
-                           'Count', 'People', 'First', 'Second', 'Var1', 'Q0.025', 'Q0.975', 'Mean', 'Type'))
+                           'Count', 'People', 'First', 'Second', 'Var1', 'Q0.025', 'Q0.975', 'Mean', 'Type', 'Clone.size', 'Q1', 'Q2', 'Symbol'))
 }
 
 
@@ -24,7 +24,9 @@ if (getRversion() >= "2.15.1") {
 .colourblind.gradient <- function (.min = NA, .max = NA) {
   #   cs <- c("#FFFFD9", "#41B6C4", "#225EA8")
 #   cs <- c("#FFFFBB", "#41B6C4", "#225EA8")
-  cs <- c("#FFBB00", "#41B6C4", "#225EA8")
+#   cs <- c("#FFBB00", "#41B6C4", "#225EA8") <- old version
+#   cs <- c("#FF4B20", "#FFB433", "#C6EDEC", "#85CFFF", "#0348A6")
+  cs <- c("#FF4B20", "#FFB433", "#C6FDEC", "#7AC5FF", "#0348A6")
   if (!is.na(.min)) {
     scale_fill_gradientn(limits = c(.min, .max), colours = cs, na.value = 'grey60')
   } else {
@@ -38,7 +40,8 @@ if (getRversion() >= "2.15.1") {
 .colourblind.discrete <- function (.n, .colour = F) {
   #   cs <- c("#FFFFD9", "#41B6C4", "#225EA8")
   #   cs <- c("#FFFFBB", "#41B6C4", "#225EA8")
-  cs <- c("#FFBB00", "#41B6C4", "#225EA8")
+#   cs <- c("#FFBB00", "#41B6C4", "#225EA8") <- old version
+  cs <- c("#FF4B20", "#FFB433", "#C6FDEC", "#7AC5FF", "#0348A6")
   if (.colour) {
     scale_colour_manual(values = colorRampPalette(cs)(.n))
   } else {
@@ -87,8 +90,8 @@ vis.count.len <- function (.data, .ncol = 3, .name = "") {
   }
   tmp <- aggregate(Read.count ~ nchar(CDR3.nucleotide.sequence), .data, sum)
   names(tmp) <- c('Lengths', 'Read.count')
-  ggplot(tmp) + aes(x = Lengths, y = Read.count, fill = Read.count) +
-    geom_histogram(stat = 'identity', colour = 'black') +
+  ggplot() +
+    geom_histogram(aes(x = Lengths, y = Read.count, fill = Read.count), data = tmp, stat = 'identity', colour = 'black') +
     .colourblind.gradient(min(tmp$Read.count), max(tmp$Read.count)) +
     ggtitle(.name) + theme_linedraw()
 }
@@ -117,17 +120,17 @@ vis.count.len <- function (.data, .ncol = 3, .name = "") {
 #' # Plot a grid of histograms with 2 columns.
 #' vis.number.count(immdata, 2)
 #' }
-vis.number.count <- function (.data, .ncol = 3, .name = '') {
+vis.number.count <- function (.data, .ncol = 3, .name = 'Histogram of clonotypes read counts') {
 #   cat('Limits for x-axis set to (0,50). Transform y-axis to sqrt(y).\n')
   
   if (has.class(.data, 'list')) {
     return(do.call(grid.arrange, c(lapply(1:length(.data), function (i) vis.number.count(.data[[i]], .name = names(.data)[i])), ncol = .ncol)))
   }
   
-  ggplot(.data, aes(x = Read.count)) + 
-    xlim(min(.data$Read.count), 300) +
-    ylab('Number of clones') +
-    geom_histogram(aes(fill = ..count..), binwidth = 1, colour = 'black') +
+  ggplot() + 
+    xlim(min(.data$Read.count), 300) + 
+    ylab('Number of clonotypes') +
+    geom_histogram(aes(x = Read.count, fill = ..count..), data = .data, binwidth = 1, colour = 'black') +
     coord_trans(xtrans = 'log10') + scale_y_log10() +
     ggtitle(.name) + 
     .colourblind.gradient() +
@@ -193,7 +196,7 @@ vis.heatmap <- function (.data, .title = "Number of shared clonotypes", .labs = 
   p + ggtitle(.title) + 
     guides(fill = guide_legend(title=.legend)) +
     xlab(.labs) + ylab(.labs) + coord_equal() +
-    theme(axis.text.x  = element_text(angle=90)) + theme_linedraw() +
+    theme_linedraw() + theme(axis.text.x  = element_text(angle=90)) +
     scale_x_discrete(expand=c(0,0)) + scale_y_discrete(expand=c(0,0))
 }
 
@@ -277,21 +280,34 @@ vis.group.boxplot <- function (.data, .groups = list(A = c('A1', 'A2'), D = c('D
 #' imm1.vs <- freq.Vb(immdata[[1]])
 #' # Two eqivalent calls for plotting the V-usage for all data frames on the one plot:
 #' vis.V.usage(immdata, .cast.freq = T, .main = 'Immdata V-usage [1]', .dodge = T)
+#' # Plot a histogram for one data frame using all gene segment data from V.segments column.
+#' vis.V.usage(immdata[[1]], .cast.freq = F, .main = 'Immdata V-usage [1]')
 #' vis.V.usage(imm1.vs, .cast.freq = F, .main = 'Immdata V-usage [2]', .dodge = T)
 #' # Plot a grid of histograms - one histogram for V-usage for each data frame in .data.
 #' vis.V.usage(immdata, .cast.freq = T, .main = 'Immdata V-usage [3]', .dodge = F, .other = F)
+#' # Plot alpha V-usage
+#' vis.V.usage(immdata[[1]], .cast.freq = T, .main = 'Immdata V-usage [4]',
+#' .dodge = F, .other = F, .alphabet = HUMAN_TRAV_ALPHABET)
 #' }
 vis.V.usage <- function (.data, .cast.freq = T, .main = 'V-usage', .ncol = 3, .coord.flip = F, .dodge = F, ...) {
   if (has.class(.data, 'list')) {
     if (.dodge) {
       res <- melt(freq.Vb(.data))
+      res <- res[1:nrow(res), ]  # something bad with melt
       colnames(res) <- c('Segment', 'Subject', 'Freq')
-      p <- ggplot(res, aes(x = Segment, y = Freq, fill = Subject)) + geom_bar(stat = 'identity', position = position_dodge(), colour = 'black') +
-        theme_linedraw() + theme(axis.text.x  = element_text(angle=90)) + scale_fill_brewer(palette = 'YlGnBu')
+      p <- ggplot() + 
+        geom_bar(aes(x = Segment, y = Freq, fill = Subject), data = res, stat = 'identity', position = position_dodge(), colour = 'black') +
+        theme_linedraw() + 
+        theme(axis.text.x = element_text(angle=90)) + 
+        .colourblind.discrete(length(.data)) +
+        scale_y_continuous(expand = c(0,0))
       return(p)
     } else {
-      return(grid.arrange(do.call(arrangeGrob, c(lapply(1:length(.data), function (i) vis.V.usage(.data[[i]], .cast.freq, names(.data)[i], 0, .coord.flip, ...)), ncol = .ncol)), 
-                          main = .main))
+      ps <- lapply(1:length(.data), function (i) {
+        vis.V.usage(.data[[i]], .cast.freq, names(.data)[i], 0, .coord.flip, ...) 
+      })
+      p <- do.call(grid.arrange, c(ps, ncol = .ncol, main = .main) )
+      return(p)
     }
   }
   
@@ -303,36 +319,41 @@ vis.V.usage <- function (.data, .cast.freq = T, .main = 'V-usage', .ncol = 3, .c
     }
   }
   
-  # If result from freq.segmens functions.
   if (names(.data)[1] == 'Segment') {
-    p <- ggplot(.data, aes(x = Segment, y = Freq, fill = Freq)) + geom_bar(stat = 'identity', colour = 'black')
+    # If result from freq.segments functions.
+    p <- ggplot() + geom_bar(aes(x = Segment, y = Freq, fill = Freq), data = .data, stat = 'identity', colour = 'black')
   }
-  # If mitcr data.frame.
   else {
-    p <- ggplot(.data, aes(x = V.segments)) + geom_histogram(aes(fill = ..count..), colour = 'black')
+    # If mitcr data.frame.
+    p <- ggplot() + geom_histogram(aes(x = V.segments, fill = ..count..), data = .data, colour = 'black')
   }
-  
   if (.coord.flip) { p <- p + coord_flip() }
-  
-  p + theme_linedraw() + theme(axis.text.x  = element_text(angle=90)) + ggtitle(.main) +
-#     .colourblind.gradient()
-   .colourblind.gradient()
-#     scale_fill_gradientn(colours = brewer.pal(11, 'Spectral')[c(1,6,11)])
+  p + theme_linedraw() + 
+    theme(axis.text.x = element_text(angle=90)) + 
+    ggtitle(.main) + 
+    .colourblind.gradient() +
+    scale_y_continuous(expand = c(.02,0))
 }
 
 vis.J.usage <- function (.data, .cast.freq = T, .main = 'J-usage', .ncol = 3, .coord.flip = F, .dodge = F, ...) {
   if (has.class(.data, 'list')) {
     if (.dodge) {
       res <- melt(freq.Jb(.data))
+      res <- res[1:nrow(res), ]  # something bad with melt
       colnames(res) <- c('Segment', 'Subject', 'Freq')
-      p <- ggplot(res, aes(x = Segment, y = Freq, fill = Subject)) + geom_bar(stat = 'identity', position = position_dodge(), colour = 'black') +
+      p <- ggplot() + 
+        geom_bar(aes(x = Segment, y = Freq, fill = Subject), data = res, stat = 'identity', position = position_dodge(), colour = 'black') +
         theme_linedraw() + 
-        theme(axis.text.x  = element_text(angle=90)) +
-        scale_fill_brewer(palette = 'YlGnBu')
+        theme(axis.text.x = element_text(angle=90)) + 
+        .colourblind.discrete(length(.data)) +
+        scale_y_continuous(expand = c(0,0))
       return(p)
     } else {
-      return(grid.arrange(do.call(arrangeGrob, c(lapply(1:length(.data), function (i) vis.J.usage(.data[[i]], .cast.freq, names(.data)[i], 0, .coord.flip, ...)), ncol = .ncol)), 
-                          main =  .main, ...))
+      p <- do.call(grid.arrange, 
+                   c(lapply(1:length(.data), function (i) {
+                     vis.J.usage(.data[[i]], .cast.freq, names(.data)[i], 0, .coord.flip, ...) 
+                   }), ncol = .ncol, main = .main) )
+      return(p)
     }
   }
   
@@ -344,21 +365,20 @@ vis.J.usage <- function (.data, .cast.freq = T, .main = 'J-usage', .ncol = 3, .c
     }
   }
   
-  # If result from freq.segmens functions.
   if (names(.data)[1] == 'Segment') {
-    p <- ggplot(.data, aes(x = Segment, y = Freq, fill = Freq)) + geom_bar(stat = 'identity', colour = 'black')
+    # If result from freq.segments functions.
+    p <- ggplot() + geom_bar(aes(x = Segment, y = Freq, fill = Freq), data = .data, stat = 'identity', colour = 'black')
   }
-  # If mitcr data.frame.
   else {
-    p <- ggplot(.data, aes(x = J.segments)) + geom_histogram(aes(fill = ..count..), , colour = 'black')
+    # If mitcr data.frame.
+    p <- ggplot() + geom_histogram(aes(x = J.segments, fill = ..count..), data = .data, colour = 'black')
   }
-  
   if (.coord.flip) { p <- p + coord_flip() }
-  
-  p + theme_linedraw() + theme(axis.text.x  = element_text(angle=90)) + ggtitle(.main) +
-    #     .colourblind.gradient()
-    .colourblind.gradient()
-  #     scale_fill_gradientn(colours = brewer.pal(11, 'Spectral')[c(1,6,11)])
+  p + theme_linedraw() + 
+    theme(axis.text.x = element_text(angle=90)) + 
+    ggtitle(.main) + 
+    .colourblind.gradient() +
+    scale_y_continuous(expand = c(.02,0))
 }
 
 
@@ -394,9 +414,9 @@ vis.pca <- function (.data, .groups = NA) {
     }
   }
   
-  ggplot(data = .data) + 
-    geom_point(aes(x = First, y = Second, colour = Group)) + 
-    geom_text(aes(x = First, y = Second, label = Subject), .data, hjust=0, vjust=0) +
+  ggplot() + 
+    geom_point(aes(x = First, y = Second, colour = Group), data = .data) + 
+    geom_text(aes(x = First, y = Second, label = Subject), data = .data, hjust=0, vjust=0) +
     theme_linedraw() +
     .colourblind.discrete(length(.groups), T)
 }
@@ -478,13 +498,14 @@ vis.top.proportions <- function (.data, .head = c(10, 100, 1000, 10000, 30000, 1
   res$People <- factor(row.names(res), levels = row.names(res))
   res <- melt(res)
   #   res$variable <- factor(as.character(res$variable), labels = paste0('[', c(1, .head[-length(.head)] + 1), ':', .head, ')'), ordered = T)
-  ggplot() + geom_bar(aes(x = People, y = value, fill = variable),data = res, stat = 'identity', position = 'stack', colour = 'black')+ 
+  ggplot() + geom_bar(aes(x = People, y = value, fill = variable), data = res, stat = 'identity', position = 'stack', colour = 'black')+ 
     theme_linedraw()  + 
     theme(axis.text.x  = element_text(angle=90)) +
-    ylab("Clonal percentage") + 
+    ylab("Clonal proportion") + 
     xlab("Subject") + 
-    ggtitle("Summary percentage of the top N clones")  + 
+    ggtitle("Summary proportion of the top N clones")  + 
     guides(fill = guide_legend("Top N clones")) + .colourblind.discrete(length(.head))
+#     scale_y_continuous(expand = c(0, 0))
 }
 
 
@@ -513,7 +534,7 @@ vis.rarefaction <- function (.muc.res, .groups = NULL, .log = F) {
   if (!is.null(.groups)) { 
     for (i in 1:length(.groups)) {
       for (j in 1:length(.groups[[i]])) {
-        .muc.res$Group[ .muc.res$People == .groups[[i]][j] ] <- names(.groups)[i]
+        .muc.res$Group[.muc.res$People == .groups[[i]][j] ] <- names(.groups)[i]
       }
     }
   }
@@ -598,14 +619,98 @@ vis.clonal.dynamics <- function (.changed, .lower, .upper, .log = T) {
   .changed <- melt(.changed, id.vars = names(.changed)[1])
   .lower <- melt(.lower, id.vars = names(.changed)[1])
   .upper <- melt(.upper, id.vars = names(.changed)[1])
-  names(.changed) <- c('Sequence', 'Time.point', 'Percentage')
+  names(.changed) <- c('Sequence', 'Time.point', 'Proportion')
   d <- cbind(.changed, Lower = .lower[,3], Upper = .upper[,3])
-  p <- ggplot() + geom_line(aes(x = Time.point, y = Percentage, colour = Sequence, group = Sequence), data = d) +
-    geom_errorbar(aes(x = Time.point, y = Percentage, colour = Sequence, ymin = Lower, ymax = Upper), data = d, width = .25) +
+  p <- ggplot() + geom_line(aes(x = Time.point, y = Proportion, colour = Sequence, group = Sequence), data = d) +
+    geom_errorbar(aes(x = Time.point, y = Proportion, colour = Sequence, ymin = Lower, ymax = Upper), data = d, width = .25) +
     theme_linedraw() + theme(axis.text.x  = element_text(angle=90)) +
     .colourblind.discrete(length(unique(.changed$Sequence)), .colour = T)
   if (.log) {
     p <- p + scale_y_log10()
   }
   p
+}
+
+
+#' Visualise occupied by clones homeostatic space among subjects or groups.
+#' 
+#' @description
+#' Visualise which clones how much space occupy.
+#' 
+#' @param .clonal.space.data Data from the \code{fclonal.space.homeostasis} function.
+#' @param .groups List of named character vector with names of subjects 
+#' in \code{.clonal.space.data} for grouping them together.
+#' 
+#' @seealso \link{clonal.space.homeostasis}
+#' 
+#' @return ggplot object.
+vis.clonal.space <- function (.clonal.space.data, .groups = NULL) {
+  melted <- melt(.clonal.space.data)
+  colnames(melted) <- c('Subject', 'Clone.size', 'Proportion')
+  melted$Subject <- as.character(melted$Subject)
+  melted$Proportion <- as.numeric(as.character(melted$Proportion))
+  melted$Group <- melted$Subject
+  
+  if (!is.null(.groups)) { 
+    for (i in 1:length(.groups)) {
+      for (j in 1:length(.groups[[i]])) {
+        melted$Group[melted$Subject == .groups[[i]][j] ] <- names(.groups)[i]
+      }
+    }
+    
+    perc <- melt(tapply(melted$Proportion, list(melted$Group, melted$Clone.size), function (x) c(quantile(x, probs = .25), mean(x), quantile(x, probs = .75))))
+    return(perc)
+    perc <- data.frame(row.names(perc), perc, stringsAsFactors = F)
+    colnames(perc) <- c('Group', 'Q1', 'Mean', 'Q2')
+    
+    p <- ggplot() +
+      geom_bar(aes(x = Group, y = Mean, fill = Clone.size), data = melted, colour = 'black', stat = 'identity') +
+      geom_errorbar(aes(x = Group, ymin = Q1, ymax = Q2), data = melted, colour = 'black') +
+      xlab("Subject")
+  } else {
+    p <- ggplot() +
+      geom_bar(aes(x = Group, y = Proportion, fill = Clone.size), data = melted, colour = 'black', stat = 'identity', position = 'stack') +
+      xlab("Subject")
+      
+  }
+    
+  p + theme_linedraw() + 
+    theme(axis.text.x = element_text(angle=90)) + ylab("Occupied homeostatic space, proportion") + 
+    ggtitle("Clonal space homeostasis") + 
+    guides(fill = guide_legend("Clone size")) + .colourblind.discrete(length(unique(melted$Clone.size))) +
+    scale_y_continuous(expand = c(.01, .01)) + scale_x_discrete(expand = c(.02, .02))
+}
+
+
+#' Logo - plots for amino acid and nucletide profiles.
+#' 
+#' @description
+#' Plot logo-like graphs for visualising of nucleotide or amino acid motif sequences / profiles.
+#' 
+#' @param .data Output from the \code{kmer.profile} function.
+#' @param .replace.zero.with.na If T than replace all zeros with NAs, therefore letters with
+#' zero frequency wont appear at the plot.
+#' @param .jitter.width,.jitter.height,.dodge.width Parameters to \code{position_jitterdodge}
+#' for aligning text labels of letters.
+#' 
+#' @return ggplot2 object
+#' 
+#' @examples
+#' \dontrun{
+#' d <- kmer.profile(c('CASLL', 'CASSQ', 'CASGL'))
+#' vis.logo(d)
+#' }
+vis.logo <- function (.data, .replace.zero.with.na = T, .jitter.width = .01, .jitter.height = .01, .dodge.width = .15) {
+  .data <- melt(.data)
+  if (.replace.zero.with.na) {
+    .data$value[.data$value == 0] <- NA
+  }
+  ggplot(aes(x = variable, y = value, fill = Symbol, colour = Symbol), data = .data) + 
+    geom_point(colour = 'black') + 
+    geom_text(aes(label = Symbol), size = 5, 
+              position = position_jitterdodge(jitter.width = .jitter.width, 
+                                              jitter.height = .jitter.height, 
+                                              dodge.width = .dodge.width)) +
+    xlab("Position") + ylab("Proportion") +
+    theme_linedraw()
 }

@@ -1,6 +1,4 @@
 beta.prob
-human.alphabets: J_ALPHA_ALPHABET J_BETA_ALPHABET V_ALPHA_ALPHABET V_BETA_ALPHABET
-mouse.alphabets: J_BETA_ALPHABET V_BETA_ALPHABET
-segments
+genesegments
 twa
 twb

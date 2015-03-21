@@ -4,6 +4,7 @@
 \alias{chao1}
 \alias{diversity}
 \alias{gini}
+\alias{gini.simpson}
 \alias{inverse.simpson}
 \title{Distribution evaluation.}
 \usage{
@@ -12,6 +13,8 @@ inverse.simpson(.data, .do.norm = NA, .laplace = 0)
 diversity(.data, .q = 5, .do.norm = NA, .laplace = 0)
 
 gini(.data, .do.norm = NA, .laplace = 0)
+
+gini.simpson(.data, .do.norm = NA, .laplace = 0)
 
 chao1(.data)
 }
@@ -31,7 +34,12 @@ Numeric vector of length 1 with value for all functions except \code{chao1}, whi
 estimated number of species, standart deviation of this number and two 95% confidence intervals for the species number.
 }
 \description{
-Function for evaluating the diversity of species or objects in the given distribution.
+Functions for evaluating the diversity of species or objects in the given distribution.
+
+Warning!
+Functions will check if .data if a distribution of random variable (sum == 1) or not.
+To force normalisation and / or to prevent this, set .do.norm to TRUE (do normalisation)
+or FALSE (don't do normalisation), respectively.
 
 - True diversity, or the effective number of types, refers to the number
 of equally-abundant types needed for the average proportional abundance
@@ -48,17 +56,16 @@ expresses perfect equality, where all values are the same (for example, where ev
 has the same income). A Gini coefficient of one (or 100 percents ) expresses maximal inequality
 among values (for example where only one person has all the income).
 
-- Chao1 estimator is a nonparameteric asymptotic estimator of species richness (number of species in a population).
+- The Gini-Simpson index is the probability of interspecific encounter, i.e., probability that two entities
+represent different types.
 
-Functions will check if .data if a distribution of random variable (sum == 1) or not.
-To force normalisation and / or to prevent this, set .do.norm to TRUE (do normalisation)
-or FALSE (don't do normalisation), respectively.
+- Chao1 estimator is a nonparameteric asymptotic estimator of species richness (number of species in a population).
 }
 \examples{
 data(twb)
 # Next two are equal calls:
 stopifnot(gini(twb[[1]]$Read.count, TRUE, 0) - 0.7609971 < 1e-07)
-stopifnot(gini(twb[[1]]$Percentage, FALSE) - 0.7609971 < 1e-07)
+stopifnot(gini(twb[[1]]$Read.proportion, FALSE) - 0.7609971 < 1e-07)
 stopifnot(chao1(twb[[1]]$Read.count)[1] == 1e+04)
 }
 \seealso{

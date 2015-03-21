@@ -42,12 +42,12 @@
 #'  \item Second character stands whether or not take the V.segments column. Possible values are '0' (zero) stands
 #' for taking no additional columns, 'v' stands for taking the "V.segments" column.
 #'  \item Third character stands for name of the column to choose as numeric characteristic of sequences. Possible values are
-#' "c" for the "Read.count" column, "p" for the "Percentage" column, "r" for the "Rank" column or "i" for the "Index" column.
+#' "c" for the "Read.count" column, "p" for the "Read.proportion" column, "r" for the "Rank" column or "i" for the "Index" column.
 #' If "Rank" or "Index" isn't in the given repertoire, than it will be created using \code{set.rank} function using default "Read.count" column.
 #' }
 #' 
 #' @return
-#' Data.table for \code{shared.repertoire}, matrix for \code{shared.matrix}.
+#' Data frame for \code{shared.repertoire}, matrix for \code{shared.matrix}.
 #' 
 #' @seealso \link{shared.representation}, \link{set.rank}
 #' 
@@ -105,7 +105,7 @@ shared.repertoire <- function (.datalist, .type = 'avc', .min.ppl = 1, .head = -
     if (substr(.type, 3, 3) == 'c') {
       .sum.col <- 'Read.count'
     } else if (substr(.type, 3, 3) == 'p') {
-      .sum.col <- 'Percentage'
+      .sum.col <- 'Read.proportion'
     } else if (substr(.type, 3, 3) == 'r') {
       .sum.col <- 'Rank'
     } else if (substr(.type, 3, 3) == 'i') {
@@ -146,11 +146,11 @@ shared.repertoire <- function (.datalist, .type = 'avc', .min.ppl = 1, .head = -
   res <- res[People >= .min.ppl & People <= .max.ppl][order(People, decreasing=T)][, c(1:(ncol(res) - length(l) - 1), ncol(res), (ncol(res) - length(l)) : (ncol(res) - 1)), with = F]
   setattr(res, 'by.col', .by.col)
   setattr(res, 'sum.col', .sum.col)
-  res
+  as.data.frame(res, stringsAsFactors = F, row.names = F)
 }
 
 shared.matrix <- function (.shared.rep) {
-  as.matrix(.shared.rep[, -(1:(match('People', colnames(.shared.rep)))), with=F])
+  as.matrix(.shared.rep[, -(1:(match('People', colnames(.shared.rep))))])
 }
 
 

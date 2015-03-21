@@ -10,25 +10,25 @@ if (getRversion() >= "2.15.1") {
 #' 
 #' @aliases freq.segments freq.segments.2D freq.Va freq.Vb freq.Ja freq.Jb
 #' 
-#' @description Get frequencies or counts of segments (V / J - usage).
+#' @description Get frequencies or counts of gene segments ("V / J - usage").
 #' 
 #' @usage
-#' freq.segments(.data, .alphabet = 'TRBV', .count = F, .meat = F, .other = T,
-#'               .laplace = 1, .column = NULL, .sum.col = "Read.count")
+#' freq.segments(.data, .alphabet = 'TRBV', .count = F, .meat = F, .other = F,
+#'               .laplace = 0, .column = NULL, .sum.col = "Read.count")
 #' 
 #' freq.segments.2D(.data, .alphabet = 'beta', .count = F, .meat = F,
-#'                  .laplace = 1, .columns = NULL, .sum.col = "Read.count", ...)
+#'                  .laplace = 0, .columns = NULL, .sum.col = "Read.count", ...)
 #' 
-#' freq.Va(.data, .count = F, .meat = F, .other = T, .laplace = 1, .sum.col = "Read.count")
+#' freq.Va(.data, .count = F, .meat = F, .other = F, .laplace = 0, .sum.col = "Read.count")
 #' 
-#' freq.Vb(.data, .count = F, .meat = F, .other = T, .laplace = 1, .sum.col = "Read.count")
+#' freq.Vb(.data, .count = F, .meat = F, .other = F, .laplace = 0, .sum.col = "Read.count")
 #' 
-#' freq.Ja(.data, .count = F, .meat = F, .other = T, .laplace = 1, .sum.col = "Read.count")
+#' freq.Ja(.data, .count = F, .meat = F, .other = F, .laplace = 0, .sum.col = "Read.count")
 #' 
-#' freq.Jb(.data, .count = F, .meat = F, .other = T, .laplace = 1, .sum.col = "Read.count")
+#' freq.Jb(.data, .count = F, .meat = F, .other = F, .laplace = 0, .sum.col = "Read.count")
 #' 
 #' @param .data Mitcr data.frame or list with data.frames.
-#' @param .alphabet Vector of elements in the alphabet for freq.segments, one of the strings 'TRBV' (for using V_BETA_ALPHABET variable, that user should load before calling functions (same for other strings)), 'TRAV', 'TRBJ', 'TRAJ' for V- and J-segments alphabets for freq.segments
+#' @param .alphabet Vector of elements in the alphabet for freq.segments, one of the strings 'TRBV' (for using HUMAN_TRBV_ALPHABET_MITCR variable, that user should load before calling functions (same for other strings)), 'TRAV', 'TRBJ', 'TRAJ' for V- and J-segments alphabets for freq.segments
 #' or one of the 'alpha' or 'beta' for freq.segments.2D or a list of length 2 with alphabets strings for freq.segments.2D.
 #' @param .count Should we return count or percentage?
 #' @param .meat Compute statistics using counts of elements (e.g., Read.count) or not.
@@ -40,22 +40,22 @@ if (getRversion() >= "2.15.1") {
 #' 
 #' @return Data.frame with columns Segments and their frequencies in the column Freq.
 #' 
-#' @seealso \code{\link{vis.V.usage}} \code{\link{vis.J.usage}} \code{\link{pca.segments}}
+#' @seealso \code{\link{genealphabets}}, \code{\link{vis.V.usage}} \code{\link{vis.J.usage}} \code{\link{pca.segments}}
 #' 
 #' @examples
 #' \dontrun{
 #' # Load your data
 #' data(twb)
-#' # Load human alphabets
-#' data(human.alphabets)
-#' # compute V-segments frequencies
-#' seg <- freq.segments(twb)
+#' # compute V-segments frequencies of human TCR beta.
+#' seg <- freq.segments(twb, "TRBV")
+#' # equivalent to the previos one
+#' seg <- freq.segments(twb, HUMAN_TRBV_ALPHABET, .column = "V.segments")
 #' # plot V-segments frequencies as a grid
 #' vis.grid.stats(seg)
 #' # plot V-segments frequencies from the data
 #' vis.V.usage(twb)
 #' }
-freq.segments <- function (.data, .alphabet='TRBV', .count=F, .meat=F, .other=T, .laplace=1, .column = NULL, .sum.col = "Read.count") {
+freq.segments <- function (.data, .alphabet='TRBV', .count=F, .meat=F, .other=F, .laplace=0, .column = NULL, .sum.col = "Read.count") {
   if (class(.data) == 'list') {
     res <- freq.segments(.data[[1]], .alphabet=.alphabet, .count=.count, .meat = .meat, .other = .other, .laplace=.laplace, .column = .column)
     names(res)[2] <- names(.data)[1]
@@ -67,10 +67,10 @@ freq.segments <- function (.data, .alphabet='TRBV', .count=F, .meat=F, .other=T,
     return(res)
   }
   
-  if (.alphabet == "TRBV")      { .column <- 'V.segments'; alphabet <- V_BETA_ALPHABET }
-  else if (.alphabet == "TRAV") { .column <- 'V.segments'; alphabet <- V_ALPHA_ALPHABET }
-  else if (.alphabet == "TRBJ") { .column <- 'J.segments'; alphabet <- J_BETA_ALPHABET }
-  else if (.alphabet == "TRAJ") { .column <- 'J.segments'; alphabet <- J_ALPHA_ALPHABET }
+  if (.alphabet == "TRBV")      { .column <- 'V.segments'; alphabet <- HUMAN_TRBV_ALPHABET_MITCR }
+  else if (.alphabet == "TRAV") { .column <- 'V.segments'; alphabet <- HUMAN_TRAV_ALPHABET }
+  else if (.alphabet == "TRBJ") { .column <- 'J.segments'; alphabet <- HUMAN_TRBJ_ALPHABET }
+  else if (.alphabet == "TRAJ") { .column <- 'J.segments'; alphabet <- HUMAN_TRAJ_ALPHABET }
   else                          { alphabet <- .alphabet }
   seg <- .data[[.column]]
   
@@ -78,7 +78,7 @@ freq.segments <- function (.data, .alphabet='TRBV', .count=F, .meat=F, .other=T,
   if (.meat) { read.count <- .data[, .sum.col] }
   
   counts.l <- tapply(read.count, seg, sum)
-  freqs <- counts.l[alphabet]
+  freqs <- as.numeric(counts.l[alphabet])
   freqs[is.na(freqs)] <- 0
   res <- data.frame(Segment = alphabet, Freq = freqs, stringsAsFactors = F, row.names=NULL)
   if (.other) {
@@ -89,24 +89,24 @@ freq.segments <- function (.data, .alphabet='TRBV', .count=F, .meat=F, .other=T,
   res[order(res$Segment),]
 }
 
-freq.Va <- function (.data, .count = F, .meat = F, .other = T, .laplace = 1, .sum.col = "Read.count") { freq.segments(.data, .alphabet='TRAV', .count, .meat, .other, .laplace, .sum.col = .sum.col) }
-freq.Vb <- function (.data, .count = F, .meat = F, .other = T, .laplace = 1, .sum.col = "Read.count") { freq.segments(.data, .alphabet='TRBV', .count, .meat, .other, .laplace, .sum.col = .sum.col) }
-freq.Ja <- function (.data, .count = F, .meat = F, .other = T, .laplace = 1, .sum.col = "Read.count") { freq.segments(.data, .alphabet='TRAJ', .count, .meat, .other, .laplace, .sum.col = .sum.col) }
-freq.Jb <- function (.data, .count = F, .meat = F, .other = T, .laplace = 1, .sum.col = "Read.count") { freq.segments(.data, .alphabet='TRBJ', .count, .meat, .other, .laplace, .sum.col = .sum.col) }
+freq.Va <- function (.data, .count = F, .meat = F, .other = F, .laplace = 0, .sum.col = "Read.count") { freq.segments(.data, .alphabet='TRAV', .count, .meat, .other, .laplace, .sum.col = .sum.col) }
+freq.Vb <- function (.data, .count = F, .meat = F, .other = F, .laplace = 0, .sum.col = "Read.count") { freq.segments(.data, .alphabet='TRBV', .count, .meat, .other, .laplace, .sum.col = .sum.col) }
+freq.Ja <- function (.data, .count = F, .meat = F, .other = F, .laplace = 0, .sum.col = "Read.count") { freq.segments(.data, .alphabet='TRAJ', .count, .meat, .other, .laplace, .sum.col = .sum.col) }
+freq.Jb <- function (.data, .count = F, .meat = F, .other = F, .laplace = 0, .sum.col = "Read.count") { freq.segments(.data, .alphabet='TRBJ', .count, .meat, .other, .laplace, .sum.col = .sum.col) }
 
-freq.segments.2D <- function (.data, .alphabet = "beta", .count = F, .meat = F, .laplace = 1, .columns = NULL, .sum.col = "Read.count", ...) {
+freq.segments.2D <- function (.data, .alphabet = "beta", .count = F, .meat = F, .laplace = 0, .columns = NULL, .sum.col = "Read.count", ...) {
   if (has.class(.data, 'list')) {
     return(lapply(.data, freq.segments.2D, .alphabet = .alphabet, .count = .count, .meat = .meat, .laplace = .laplace, .columns = .columns, .sum.col = .sum.col, ...))
   }
   
   if (.alphabet=="beta") {
     .columns <- c('V.segments', 'J.segments')
-    alphabetV <- V_BETA_ALPHABET
-    alphabetJ <- J_BETA_ALPHABET
+    alphabetV <- HUMAN_TRBV_ALPHABET_MITCR
+    alphabetJ <- HUMAN_TRBJ_ALPHABET
   } else if (.alphabet=="alpha") {
     .columns <- c('V.segments', 'J.segments')
-    alphabetV <- V_ALPHA_ALPHABET
-    alphabetJ <- J_ALPHA_ALPHABET
+    alphabetV <- HUMAN_TRAV_ALPHABET
+    alphabetJ <- HUMAN_TRAJ_ALPHABET
   } else {
     alphabetV <- .alphabet[[1]]
     alphabetJ <- .alphabet[[2]]

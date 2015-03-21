@@ -37,4 +37,10 @@ was generated.
 
 \code{get.kmer.column} - get vector of k-mers from the k-mer table from the function \code{kmer.table}
 }
+\examples{
+\dontrun{
+twb.kmers <- kmer.table(twb, .heads = c(5000, 10000), .meat = T)
+head(get.kmer.column(twb.kmers, 10000))
+}
+}
 

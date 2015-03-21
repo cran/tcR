@@ -9,24 +9,24 @@
 \alias{freq.segments.2D}
 \title{V- and J-segments frequency.}
 \usage{
-freq.segments(.data, .alphabet = 'TRBV', .count = F, .meat = F, .other = T,
-              .laplace = 1, .column = NULL, .sum.col = "Read.count")
+freq.segments(.data, .alphabet = 'TRBV', .count = F, .meat = F, .other = F,
+              .laplace = 0, .column = NULL, .sum.col = "Read.count")
 
 freq.segments.2D(.data, .alphabet = 'beta', .count = F, .meat = F,
-                 .laplace = 1, .columns = NULL, .sum.col = "Read.count", ...)
+                 .laplace = 0, .columns = NULL, .sum.col = "Read.count", ...)
 
-freq.Va(.data, .count = F, .meat = F, .other = T, .laplace = 1, .sum.col = "Read.count")
+freq.Va(.data, .count = F, .meat = F, .other = F, .laplace = 0, .sum.col = "Read.count")
 
-freq.Vb(.data, .count = F, .meat = F, .other = T, .laplace = 1, .sum.col = "Read.count")
+freq.Vb(.data, .count = F, .meat = F, .other = F, .laplace = 0, .sum.col = "Read.count")
 
-freq.Ja(.data, .count = F, .meat = F, .other = T, .laplace = 1, .sum.col = "Read.count")
+freq.Ja(.data, .count = F, .meat = F, .other = F, .laplace = 0, .sum.col = "Read.count")
 
-freq.Jb(.data, .count = F, .meat = F, .other = T, .laplace = 1, .sum.col = "Read.count")
+freq.Jb(.data, .count = F, .meat = F, .other = F, .laplace = 0, .sum.col = "Read.count")
 }
 \arguments{
 \item{.data}{Mitcr data.frame or list with data.frames.}
 
-\item{.alphabet}{Vector of elements in the alphabet for freq.segments, one of the strings 'TRBV' (for using V_BETA_ALPHABET variable, that user should load before calling functions (same for other strings)), 'TRAV', 'TRBJ', 'TRAJ' for V- and J-segments alphabets for freq.segments
+\item{.alphabet}{Vector of elements in the alphabet for freq.segments, one of the strings 'TRBV' (for using HUMAN_TRBV_ALPHABET_MITCR variable, that user should load before calling functions (same for other strings)), 'TRAV', 'TRBJ', 'TRAJ' for V- and J-segments alphabets for freq.segments
 or one of the 'alpha' or 'beta' for freq.segments.2D or a list of length 2 with alphabets strings for freq.segments.2D.}
 
 \item{.count}{Should we return count or percentage?}
@@ -47,16 +47,16 @@ or one of the 'alpha' or 'beta' for freq.segments.2D or a list of length 2 with 
 Data.frame with columns Segments and their frequencies in the column Freq.
 }
 \description{
-Get frequencies or counts of segments (V / J - usage).
+Get frequencies or counts of gene segments ("V / J - usage").
 }
 \examples{
 \dontrun{
 # Load your data
 data(twb)
-# Load human alphabets
-data(human.alphabets)
-# compute V-segments frequencies
-seg <- freq.segments(twb)
+# compute V-segments frequencies of human TCR beta.
+seg <- freq.segments(twb, "TRBV")
+# equivalent to the previos one
+seg <- freq.segments(twb, HUMAN_TRBV_ALPHABET, .column = "V.segments")
 # plot V-segments frequencies as a grid
 vis.grid.stats(seg)
 # plot V-segments frequencies from the data
@@ -64,6 +64,6 @@ vis.V.usage(twb)
 }
 }
 \seealso{
-\code{\link{vis.V.usage}} \code{\link{vis.J.usage}} \code{\link{pca.segments}}
+\code{\link{genealphabets}}, \code{\link{vis.V.usage}} \code{\link{vis.J.usage}} \code{\link{pca.segments}}
 }
 

@@ -17,7 +17,7 @@
 #' @param .left.shift Cut all \code{.left.shift} symbols from the left side for each sequence.
 #' @param .right.shift Cut all \code{.right.shift} symbols from the right side for each sequence.
 #' 
-#' @return Data.frame with 2 columns Kmers and Count / Rank / Percentage relatively to the .value param
+#' @return Data.frame with 2 columns Kmers and Count / Rank / Proportion relatively to the .value param
 #' or a list with such data.frames if .data is a list.
 get.kmers <- function (.data, .head = -1, .k = 5, .clean = T, .meat = F, .verbose = T, .left.shift = 0, .right.shift = 0) {  
   if (class(.data) == 'list') {
@@ -140,6 +140,12 @@ get.kmers <- function (.data, .head = -1, .k = 5, .clean = T, .meat = F, .verbos
 #' 
 #' \code{get.kmer.column} - data frame with first column with kmers and other columns named as a names of data frames, from which \code{.kmer.table.list}
 #' was generated.
+#' 
+#' @examples
+#' \dontrun{
+#' twb.kmers <- kmer.table(twb, .heads = c(5000, 10000), .meat = T)
+#' head(get.kmer.column(twb.kmers, 10000))
+#' }
 kmer.table <- function (.data, .heads = c(10, 100, 300, 1000, 3000, 10000, 30000), .nrow = 20, .clean=T, .meat = F) {
   if (class(.data) == 'list') {
     return(lapply(.data, kmer.table, .heads = .heads, .nrow = .nrow, .clean = .clean, .meat = .meat))
@@ -177,7 +183,7 @@ get.kmer.column <- function (.kmer.table.list, .head) {
 #' 
 #' @description
 #' Generate all k-mers. starting with the given sequence on the given alphabet
-#' Generate k-mers with the given k and probabilities of nucleotides next to each other.
+#' Generate k-mers with the given k and probabilities of nucleotides next to each other (markov chain).
 #' 
 #' @usage
 #' generate.kmers(.k, .seq = '', .alphabet = c('A', 'C', 'G', 'T'))
@@ -240,19 +246,20 @@ generate.kmers.prob <- function (.k, .probs, .count = 1, .alphabet = c('A', 'C',
 #' of equal length or list with them.
 #' 
 #' @usage
-#' kmer.profile(.data, .names = rep('Noname', times=length(.data)), .meat = T, .verbose = F)
+#' kmer.profile(.data, .names = rep('Noname', times=length(.data)), .verbose = F)
 #'
 #' @param .data Either list with elements of one of the allowed classes or object with one of the class:
-#' data.frame with first column with character sequences and second column with number of sequences if .meat = T; character vector,
+#' data.frame with first column with character sequences and second column with number of sequences or character vector.
 #' @param .names Names for each sequence / row in the \code{.data}.
-#' @param .meat Use number of sequences (second column of \code{.data} data frame) or not.
 #' @param .verbose If T than print processing output.
 #' 
 #' @return Return data frame with first column "Symbol" with all possible symbols in the given sequences
 #' and other columns with names "1", "2", ... for each position with percentage for each symbol.
-kmer.profile <- function (.data, .names = rep('Noname', times=length(.data)), .meat = T, .verbose = F) {
+#' 
+#' @seealso \link{vis.logo}
+kmer.profile <- function (.data, .names = rep('Noname', times=length(.data)), .verbose = F) {
   .get.nth.letter.stats <- function (.data, .n) {
-    res <- summarise(grouped_df(data.frame(Letter = substr(.data[, 1], .n, .n), Count = .data[,2]), as.list("Letter")), Sum.count = sum(Count))
+    res <- summarise(grouped_df(data.frame(Letter = substr(.data[, 1], .n, .n), Count = .data[,2]), list(as.name("Letter"))), Sum.count = sum(Count))
     res$Sum.count <- res$Sum.count / sum(res$Sum.count)
     names(res) <- c("Sequence", as.character(.n))
     res
@@ -283,12 +290,14 @@ kmer.profile <- function (.data, .names = rep('Noname', times=length(.data)), .m
     
     aa.profiles <- merge(aa.profiles, tmp, all=T, by = 'Sequence')
 #       aa.profiles <- merge(aa.profiles, as.data.frame(prop.table(table(substr(kmers[,1], i, i))), stringsAsFactors=F), all=T, by = 'Var1')
-    setnames(aa.profiles, c('Sequence', 1:i))
+    names(aa.profiles) <- c('Sequence', 1:i)
   }
   aa.profiles <- as.data.frame(aa.profiles)
   names(aa.profiles)[1] <- 'Symbol'
   aa.profiles[is.na(aa.profiles)] <- 0
-  aa.profiles[order(aa.profiles[,1]),]
+  aa.profiles <- aa.profiles[order(aa.profiles[,1]),]
+  row.names(aa.profiles) <- aa.profiles[,1]
+  aa.profiles
 }
 
 
@@ -318,7 +327,6 @@ gibbs.sampler <- function (.data, .k = 5, .niter = 500, .meat = T) {
     for (i in 1:(nc - .n + 1)) {
       res[i] <- substr(.seq, i, i + .n - 1)
     }
-    res
     
     max.p <- 0
     max.kmer <- res[1]
@@ -356,8 +364,8 @@ gibbs.sampler <- function (.data, .k = 5, .niter = 500, .meat = T) {
   best.kmers <- kmers
   
   cat('Performing gibbs sampling...\n')
+  pb <- set.pb(.niter)
   for (i in 1:.niter) {
-    cat(i, '/', .niter, '\n')
     unused.motif.index <- sample(1:length(kmers), 1)
     prof <- kmer.profile(kmers[-unused.motif.index])
     kmers[unused.motif.index] <- .get.best.motif(.data[unused.motif.index], prof)
@@ -367,7 +375,9 @@ gibbs.sampler <- function (.data, .k = 5, .niter = 500, .meat = T) {
     if (i %% 500 == 0) {
       save(best.kmers, file = paste0('gibbs.', i, date(), '.rda'))
     }
+    add.pb(pb)
   }
+  close(pb)
   
   unique(best.kmers)
 }
