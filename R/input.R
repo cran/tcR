@@ -1,7 +1,7 @@
 ########## Data processing functions ##########
 
 
-#' Parse input table files with immune receptor repertoire data.
+#' Parse input table files with the immune receptor repertoire data.
 #'
 #' @description
 #' General parser for cloneset table files. Each column name has specific purpose (e.g., column for
@@ -79,12 +79,12 @@ parse.cloneset <- function (.filename,
   
   if(is.na(.barcodes)) {
     .barcodes <- "Barcode count"
-    df$Barcode.count <- NA
-    df$Barcode.proportion <- NA
+    df$Umi.count <- NA
+    df$Umi.proportion <- NA
   } else {
-    df$Barcode.proportion <- df[, make.names(.barcodes)] / sum(df[, make.names(.barcodes)])
+    df$Umi.proportion <- df[, make.names(.barcodes)] / sum(df[, make.names(.barcodes)])
   }
-  .bc.prop <- 'Barcode.proportion'
+  .umi.prop <- 'Umi.proportion'
   
   if (is.na(.aa.seq)) {
     df$CDR3.amino.acid.sequence <- bunch.translate(df$CDR3.nucleotide.sequence)
@@ -103,15 +103,15 @@ parse.cloneset <- function (.filename,
   
   if (!(.dj.insertions %in% table.colnames)) { df$DJ.insertions <- -1 }
   
-  df <- df[, make.names(c(.barcodes, .bc.prop, .reads, .read.prop, 
+  df <- df[, make.names(c(.barcodes, .umi.prop, .reads, .read.prop, 
                           .nuc.seq, .aa.seq,
                           .vgenes, .jgenes, .dgenes,
                           .vend, .jstart, .dalignments,
                           .vd.insertions, .dj.insertions, .total.insertions))]
   
-  colnames(df) <- c('Barcode.count', 'Barcode.proportion', 'Read.count', 'Read.proportion',
+  colnames(df) <- c('Umi.count', 'Umi.proportion', 'Read.count', 'Read.proportion',
                     'CDR3.nucleotide.sequence', 'CDR3.amino.acid.sequence',
-                    'V.segments', 'J.segments', 'D.segments',
+                    'V.gene', 'J.gene', 'D.gene',
                     'V.end', 'J.start', 'D5.end', 'D3.end',
                     'VD.insertions', 'DJ.insertions', 'Total.insertions')
   
@@ -150,9 +150,9 @@ parse.cloneset <- function (.filename,
 #' @return Data frame with immune receptor repertoire data. Each row in this data frame corresponds to a clonotype.
 #' The data frame has following columns:
 #' 
-#' - "Barcode.count" - number of barcodes (events, UMIs);
+#' - "Umi.count" - number of barcodes (events, UMIs);
 #' 
-#' - "Barcode.proportion" - proportion of barcodes (events, UMIs);
+#' - "Umi.proportion" - proportion of barcodes (events, UMIs);
 #' 
 #' - "Read.count" - number of reads;
 #' 
@@ -162,11 +162,11 @@ parse.cloneset <- function (.filename,
 #' 
 #' - "CDR3.amino.acid.sequence" - CDR3 amino acid sequence;
 #' 
-#' - "V.segments" - names of aligned Variable gene segments;
+#' - "V.gene" - names of aligned Variable gene segments;
 #' 
-#' - "J.segments" - names of aligned Joining gene segments;
+#' - "J.gene" - names of aligned Joining gene segments;
 #' 
-#' - "D.segments" - names of aligned Diversity gene segments;
+#' - "D.gene" - names of aligned Diversity gene segments;
 #' 
 #' - "V.end" - last positions of aligned V gene segments (1-based);
 #' 

@@ -11,6 +11,39 @@
 }
 
 
+#' Choose the right column.
+#' 
+#' @param .x Character vector with column IDs.
+#' @param .verbose If T then print the error mesasge.
+#' @return Character.
+.column.choice <- function (x, .verbose = T) {
+  x <- switch(x[1],
+              read.count = "Read.count",
+              umi.count = "Umi.count",
+              read.prop = "Read.proportion",
+              umi.prop = "Umi.proportion",
+              { .verbose.msg("You have specified an invalid column identifier. Choosed column: Read.count\n", .verbose); "Read.count" })
+  x
+}
+
+
+#' Fix names in lists.
+#' 
+#' @param .datalist List with data frames.
+#' @return List with fixed names.
+.fix.listnames <- function (.datalist) {
+  if (is.null(names(.datalist))) { names(.datalist) <- paste0("Sample.", 1:length(.datalist)) }
+  else {
+    for (i in 1:length(.datalist)) {
+      if (names(.datalist)[i] == "" || is.na(names(.datalist)[i])) {
+        names(.datalist)[i] <- paste0("Sample.", i)
+      }
+    }
+  }
+  .datalist
+}
+
+
 #' Get all unique clonotypes.
 #' 
 #' @description
@@ -56,7 +89,7 @@
 #' twb1.gr <- group.clonotypes(twb[[1]])
 #' twb.gr <- group.clonotypes(twb)
 #' }
-group.clonotypes <- function (.data, .gene.col = 'V.segments', .count.col = 'Read.count',
+group.clonotypes <- function (.data, .gene.col = 'V.gene', .count.col = 'Read.count',
                               .prop.col = 'Read.proportion', .seq.col = 'CDR3.amino.acid.sequence') {
   if (has.class(.data, 'list')) {
     return(lapply(.data, group.clonotypes, .gene.col = .gene.col, .count.col = .count.col, .seq.col = .seq.col))
@@ -113,7 +146,7 @@ unpermutedf <- function (.data) {
 #' 
 #' @param .data Data.frame or a list with data.frames
 #' @param .n Sample size if integer. If in bounds [0;1] than percent of rows to extract. "1" is a percent, not one row!
-#' @param .replace If T than choose with replacement, else without.
+#' @param .replace if T then choose with replacement, else without.
 #' 
 #' @return Data.frame of nrow .n or a list with such data.frames.
 sample.clones <- function (.data, .n, .replace = T) { 
@@ -208,13 +241,14 @@ sample2D <- function (.table, .count = 1) {
 #' @param .fun Function to apply, which return basic class value.
 #' @param ... Arguments passsed to .fun.
 #' @param .diag Either NA for NA or something else != NULL for .fun(x,x).
-#' @param .verbose If T than output a progress bar.
+#' @param .verbose if T then output a progress bar.
 #' 
 #' @return Matrix with values M[i,j] = fun(datalist[i], datalist[j])
 #' 
 #' @examples
 #' \dontrun{
-#' apply.symm(immdata, intersect, .type = 'a0e') # equivalent to intersect(immdata, 'a0e')
+#' # equivalent to intersectClonesets(immdata, 'a0e')
+#' apply.symm(immdata, intersectClonesets, .type = 'a0e')
 #' }
 apply.symm <- function (.datalist, .fun, ..., .diag = NA, .verbose = T) {
   res <- matrix(0, length(.datalist), length(.datalist))
@@ -254,22 +288,41 @@ apply.asymm <- function (.datalist, .fun, ..., .diag = NA, .verbose = T) {
 #' 
 #' @param .data Numeric vector of values.
 #' @param .do.norm One of the three values - NA, T or F. If NA than check for distrubution (sum(.data) == 1)
-#' and normalise if needed with the given laplace correction value. If T than do normalisation and laplace
+#' and normalise if needed with the given laplace correction value. if T then do normalisation and laplace
 #' correction. If F than don't do normalisaton and laplace correction.
 #' @param .laplace Value for laplace correction.
 #' @param .na.val Replace all NAs with this value.
+#' @param .warn.zero if T then the function checks if in the resulted vector (after normalisation)
+#' are any zeros, and print a warning message if there are some.
+#' @param .warn.sum if T then the function checks if the sum of resulted vector (after normalisation)
+#' is equal to one, and print a warning message if not.
 #' 
 #' @return Numeric vector.
-check.distribution <- function (.data, .do.norm = NA, .laplace = 1, .na.val = 0) {
+check.distribution <- function (.data, .do.norm = NA, .laplace = 1, .na.val = 0, .warn.zero = F, .warn.sum = T) {
+  if (sum(is.na(.data)) == length(.data)) {
+    cat("Error! Input vector is completely filled with NAs. Check your input data to avoid this. Returning vectors with zeros.\n")
+    return(rep.int(0, length(.data)))
+  }
+  
   if (is.na(.do.norm)) {
     .data[is.na(.data)] <- .na.val
     if (sum(.data) != 1) {
-      .data <- (.data + .laplace) / sum(.data + .laplace)
+      .data <- .data + .laplace
+      .data <- prop.table(.data + .laplace)
     }
   } else if (.do.norm) {
     .data[is.na(.data)] <- .na.val
-    .data <- (.data + .laplace) / sum(.data + .laplace)
+    .data <- prop.table(.data + .laplace)
   }
+  
+  if (.warn.zero && (0 %in% .data)) {
+    cat("Warning! There are", sum(which(.data == 0)), "zeros in the input vector. Function may produce incorrect results.\nTo fix this try to set .laplace = 1 or any other small number in the function's parameters\n")
+  }
+  
+  if (.warn.sum && sum(.data) != 1) {
+    cat("Warning! Sum of the input vector is NOT equal to 1. Function may produce incorrect results.\nTo fix this try to set .do.norm = TRUE in the function's parameters.\n")
+  }
+  
   .data
 }
 
@@ -293,7 +346,7 @@ check.distribution <- function (.data, .do.norm = NA, .laplace = 1, .na.val = 0)
 #' @param .size Size of the slice for sampling for slice.fun.
 #' @param .fun Funtions to apply to every sample subset. First input argument is a data.frame, others are passed as \code{...}.
 #' @param ... Additional parameters passed to the .fun.
-#' @param .simplify If T than try to simplify result to a vector or to a matrix if .data is a list.
+#' @param .simplify if T then try to simplify result to a vector or to a matrix if .data is a list.
 #' 
 #' @return List of length length(.n) for top.fun or .n for slice.fun.
 #' 

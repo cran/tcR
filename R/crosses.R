@@ -3,16 +3,16 @@
 
 #' Intersection between sets of sequences or any elements.
 #' 
-#' @aliases intersect intersectCount intersectLogic intersectIndices
+#' @aliases intersectClonesets intersectCount intersectLogic intersectIndices
 #' 
 #' @description
-#' Functions for the intersection of data frames with TCR / BCR data.
+#' Functions for the intersection of data frames with TCR / Ig data. 
+#' See the \code{repOverlap} function for a general interface to all overlap analysis functions.
 #' 
-#' \code{intersect} - overwrites \code{base::intersect} function. If supplied with parameters \code{x} and \code{y},
-#' than runs \code{base::intersect} on them. If not, than returns number of similar elements in the given objects or matrix
-#' with count of similar elements among each objects in the given list.
+#' \code{intersectClonesets} - returns number of similar elements in the given two clonesets / data frames or matrix
+#' with counts of similar elements among each pair of objects in the given list.
 #' 
-#' \code{intersectCount} - similar to \code{tcR::intersect}, but with fewer parameters and only for two objects.
+#' \code{intersectCount} - similar to \code{tcR::intersectClonesets}, but with fewer parameters and only for two objects.
 #' 
 #' \code{intersectIndices} - returns matrix M with two columns, where element with index M[i, 1] in the first
 #' given object is similar to an element with index M[i, 2] in the second given object.
@@ -21,8 +21,8 @@
 #' is found in the second given data frame.
 #' 
 #' @usage
-#' intersect(.alpha = NULL, .beta = NULL, .type = "00e", .head = -1, .norm = F,
-#'           .verbose = F, x = NULL, y = NULL)
+#' intersectClonesets(.alpha = NULL, .beta = NULL, .type = "n0e", .head = -1, .norm = F,
+#'           .verbose = F)
 #' 
 #' intersectCount(.alpha, .beta, .method = c('exact', 'hamm', 'lev'), .col = NULL)
 #' 
@@ -38,27 +38,26 @@
 #' 'lev' for matching strings which have <= 1 levenshtein (edit) distance between them.
 #' @param .col Which columns use for fetching values to intersect. First supplied column matched with \code{.method}, others as exact values.
 #' @param .norm If TRUE than normalise result by product of length or nrows of the given data.
-#' @param .verbose If T than produce output of processing the data.
-#' @param x,y Parameters leaved for compatability with code which uses \code{base::intersect}. If provided than replaces \code{.alpha} and \code{.beta} respectively.
+#' @param .verbose if T then produce output of processing the data.
 #' 
 #' @details
-#' Parameter \code{.type} of the \code{intersect} function is a string of length 3
+#' Parameter \code{.type} of the \code{intersectClonesets} function is a string of length 3
 #' [0an][0vja][ehl], where:
 #' \enumerate{
 #'  \item First character defines which elements intersect ("a" for elements from the column "CDR3.amino.acid.sequence", 
 #'  "n" for elements from the column "CDR3.nucleotide.sequence", other characters - intersect elements as specified);
 #'  \item Second character defines which columns additionaly script should use
-#' ('0' for cross with no additional columns, 'v' for cross using the "V.segments" column, 
-#' 'j' for cross using "J.segments" column, 'a' for cross using both "V.segments" and "J.segments" columns);
+#' ('0' for cross with no additional columns, 'v' for cross using the "V.gene" column, 
+#' 'j' for cross using "J.gene" column, 'a' for cross using both "V.gene" and "J.gene" columns);
 #'  \item Third character defines a method of search for similar sequences is use:
 #'  "e" stands for the exact match of sequnces, "h" for match elements which have the Hamming distance between them
 #'  equal to or less than 1, "l" for match elements which have the Levenshtein distance between tham equal to or less than 1.
 #' }
 #' 
-#' @seealso \link{vis.heatmap}, \link{vis.group.boxplot}
+#' @seealso  \link{repOverlap}, \link{vis.heatmap}, \link{vis.group.boxplot}
 #' 
 #' @return
-#' \code{intersect} returns (normalised) number of similar elements or matrix with numbers of elements.
+#' \code{intersectClonesets} returns (normalised) number of similar elements or matrix with numbers of elements.
 #' 
 #' \code{intersectCount} returns number of similar elements.
 #' 
@@ -67,32 +66,34 @@
 #' \code{intersectLogic} returns logical vector of \code{length(x)} or \code{nrow(x)}, where TRUE at position \code{i} means that element with index {i} has been found in the \code{y}
 #' 
 #' @examples
+#' \dontrun{
 #' data(twb)
-#' # Equivalent to intersect(twb[[1]]$CDR3.nucleotide.sequence,
+#' # Equivalent to intersectClonesets(twb[[1]]$CDR3.nucleotide.sequence,
 #' #                         twb[[2]]$CDR3.nucleotide.sequence)
 #' # or intersectCount(twb[[1]]$CDR3.nucleotide.sequence,
 #' #                    twb[[2]]$CDR3.nucleotide.sequence)
 #' # First "n" stands for a "CDR3.nucleotide.sequence" column, "e" for exact match.
-#' twb.12.n0e <- intersect(twb[[1]], twb[[2]], 'n0e')
+#' twb.12.n0e <- intersectClonesets(twb[[1]], twb[[2]], 'n0e')
 #' stopifnot(twb.12.n0e == 46)
 #' # First "a" stands for "CDR3.amino.acid.sequence" column.
-#' # Second "v" means that intersect should also use the "V.segments" column.
-#' intersect(twb[[1]], twb[[2]], 'ave')
+#' # Second "v" means that intersect should also use the "V.gene" column.
+#' intersectClonesets(twb[[1]], twb[[2]], 'ave')
 #' # Works also on lists, performs all possible pairwise intersections.
-#' intersect(twb, 'ave')
+#' intersectClonesets(twb, 'ave')
 #' # Plot results.
-#' vis.heatmap(intersect(twb, 'ave'), .title = 'twb - (ave)-intersection', .labs = '')
+#' vis.heatmap(intersectClonesets(twb, 'ave'), .title = 'twb - (ave)-intersection', .labs = '')
 #' # Get elements which are in both twb[[1]] and twb[[2]].
 #' # Elements are tuples of CDR3 nucleotide sequence and corresponding V-segment
 #' imm.1.2 <- intersectLogic(twb[[1]], twb[[2]],
-#'                            .col = c('CDR3.amino.acid.sequence', 'V.segments'))  
-#' head(twb[[1]][imm.1.2, c('CDR3.amino.acid.sequence', 'V.segments')])
-intersect <- function (.alpha = NULL, .beta = NULL, .type = '00e', .head = -1, .norm = F, .verbose = F, x = NULL, y = NULL) {
+#'                            .col = c('CDR3.amino.acid.sequence', 'V.gene'))  
+#' head(twb[[1]][imm.1.2, c('CDR3.amino.acid.sequence', 'V.gene')])
+#' }
+intersectClonesets <- function (.alpha = NULL, .beta = NULL, .type = 'n0e', .head = -1, .norm = F, .verbose = F) {
   if (class(.alpha) == 'list') {
     if (class(.beta) == 'character') {
       .type <- .beta
     }
-    apply.symm(.alpha, intersect, .head = .head, .type = .type, .norm = .norm, .verbose = .verbose)
+    apply.symm(.alpha, intersectClonesets, .head = .head, .type = .type, .norm = .norm, .verbose = .verbose)
   } else {
     if (.head != -1) {
       .alpha <- head(.alpha, .head)
@@ -109,11 +110,11 @@ intersect <- function (.alpha = NULL, .beta = NULL, .type = '00e', .head = -1, .
         }
         
         if (substr(.type, 2, 2) == 'v') {
-          cols <- c(cols, 'V.segments')
+          cols <- c(cols, 'V.gene')
         } else if (substr(.type, 2, 2) == 'j') {
-          cols <- c(cols, 'J.segments')
+          cols <- c(cols, 'J.gene')
         } else if (substr(.type, 2, 2) == 'a') {
-          cols <- c(cols, 'V.segments', 'J.segments')
+          cols <- c(cols, 'V.gene', 'J.gene')
         } else if (substr(.type, 2, 2) != '0') {
           cat("Second character in .type:", .type, 'is unknown!\n')
         }

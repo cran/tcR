@@ -1,75 +1,77 @@
-### R code from vignette source 'tcrvignette.Rnw'
-
-###################################################
-### code chunk number 1: tcrvignette.Rnw:81-85 (eval = FALSE)
-###################################################
-## data(twa)
-## head(twa[[1]])
-## data(twb)
-## head(twb[[1]])
-
-
-###################################################
-### code chunk number 2: tcrvignette.Rnw:89-90 (eval = FALSE)
-###################################################
-## ?genealphabets
-
-
-###################################################
-### code chunk number 3: tcrvignette.Rnw:119-122
-###################################################
+## ----eval=TRUE,echo=FALSE,warning=FALSE,message=FALSE--------------------
 library(tcR)
+data(twa)
 data(twb)
-head(twb[[1]])
 
+## ----eval=FALSE,echo=TRUE------------------------------------------------
+#  # Load the package and load the data.
+#  library(tcR)
+#  data(twa)  # "twa" - list of length 4
+#  data(twb)  # "twb" - list of length 4
+#  
+#  # Explore the data.
+#  head(twa[[1]])
+#  head(twb[[1]])
 
-###################################################
-### code chunk number 4: tcrvignette.Rnw:153-159
-###################################################
-# Load the package.
-library(tcR)
-# Load additional packages for making this vignette.
-# Load the twins data, provided with the package.
-data(twb)
-mitcr.stats(twb)
+## ----eval=FALSE,echo=TRUE------------------------------------------------
+#  # Run help to see available alphabets.
+#  ?genealphabets
+#  ?genesegments
+#  data(genesegments)
 
+## ----eval=FALSE,echo=TRUE------------------------------------------------
+#  # Parse file in "~/mitcr/immdata1.txt" as a MiTCR file.
+#  immdata1 <- parse.file("~/mitcr_data/immdata1.txt", 'mitcr')
+#  # equivalent to
+#  immdata1.eq <- parse.mitcr("~/mitcr_data/immdata1.txt")
+#  
+#  # Parse folder with MiGEC files.
+#  immdata <- parse.folder("~/migec_data/", 'migec')
 
-###################################################
-### code chunk number 5: tcrvignette.Rnw:167-169
-###################################################
-                            # How many clones fill up approximately
+## ----eval=TRUE, echo=TRUE------------------------------------------------
+# No D genes is available here hence "" at "D.genes" and "-1" at positions.
+str(twa[[1]])
+
+str(twb[[1]])
+
+## ----eval=TRUE,echo=TRUE-------------------------------------------------
+cloneset.stats(twb)
+
+## ----eval=TRUE,echo=TRUE-------------------------------------------------
+repseq.stats(twb)
+
+## ----eval=TRUE,echo=TRUE-------------------------------------------------
+                            # How many clonotypes fill up approximately
 clonal.proportion(twb, 25)  # the 25% of the sum of values in 'Read.count'?
 
-
-###################################################
-### code chunk number 6: tcrvignette.Rnw:176-179
-###################################################
-                          # What accounts a proportion of the top-10 clones' reads
+## ----echo=TRUE, eval=TRUE, fig=TRUE, fig.height=4, fig.width=5.5, message=FALSE, fig.align='center'----
+                          # What accounts a proportion of the top-10 clonotypes' reads
 top.proportion(twb, 10)   # to the overall number of reads?
 vis.top.proportions(twb)  # Plot this proportions.
 
-
-###################################################
-### code chunk number 7: tcrvignette.Rnw:184-187
-###################################################
+## ----eval=TRUE,echo=TRUE-------------------------------------------------
                                 # What is a proportion of sequences which
                                 # have 'Read.count' <= 100 to the
 tailbound.proportion(twb, 100)  # overall number of reads?
 
+## ----eval=TRUE, echo=TRUE, fig.height=4, fig.width=6.5, fig.align='center'----
+# data(twb)
+# Compute summary space of clones, that occupy
+# [0, .05) and [.05, 1] proportion.
+clonal.space.homeostasis(twb, c(Low = .05, High = 1))
+# Use default arguments:
+clonal.space.homeostasis(twb[[1]])
 
-###################################################
-### code chunk number 8: tcrvignette.Rnw:193-198
-###################################################
+twb.space <- clonal.space.homeostasis(twb)
+vis.clonal.space(twb.space)
+
+## ----eval=TRUE,echo=TRUE-------------------------------------------------
 imm.in <- get.inframes(twb) # Return all in-frame sequences from the 'twb'.
 
                             # Count the number of out-of-frame sequences
 count.outframes(twb, 5000)  # from the first 5000 sequences.
-head(freq.Vb(imm.in)[,2] / freq.Vb(twb)[,2])       # Compare V-usage between in-frames and all seq.
 
-
-###################################################
-### code chunk number 9: tcrvignette.Rnw:201-207
-###################################################
+## ----eval=TRUE,echo=TRUE-------------------------------------------------
 imm.in <- get.frames(twb, 'in') # Similar to 'get.inframes(twb)'.
 
 count.frames(twb[[1]], 'all')   # Just return number of rows.
@@ -77,64 +79,13 @@ count.frames(twb[[1]], 'all')   # Just return number of rows.
 flag <- 'out'
 count.frames(twb, flag, 5000)   # Similar to 'count.outframes(twb, 5000)'.
 
-
-###################################################
-### code chunk number 10: tcrvignette.Rnw:215-218
-###################################################
-# Equivalent to freq.Vb(twb[[1]]) by default.
-imm1.vs <- freq.segments(twb[[1]])
-head(imm1.vs)
-
-
-###################################################
-### code chunk number 11: tcrvignette.Rnw:221-223
-###################################################
-imm.vs.all <- freq.segments(twb)  # Equivalent to freq.Vb(twb) by default.
-imm.vs.all[1:10, 1:4]
-
-
-###################################################
-### code chunk number 12: tcrvignette.Rnw:226-228
-###################################################
-imm1.vj <- freq.segments.2D(twb[[1]])
-imm1.vj[1:5, 1:5]
-
-
-###################################################
-### code chunk number 13: tcrvignette.Rnw:232-234
-###################################################
-# Put ".dodge = F" to get distinct plot for every data frame in the given list.
-vis.J.usage(twb, .cast.freq = T, .main = 'twb J-usage dodge', .dodge = T)
-
-
-###################################################
-### code chunk number 14: tcrvignette.Rnw:237-238
-###################################################
-vis.J.usage(twb, .cast.freq = T, .main = 'twb J-usage column', .dodge = F, .ncol = 2)
-
-
-###################################################
-### code chunk number 15: tcrvignette.Rnw:241-242
-###################################################
-vis.V.usage(imm1.vs, .cast.freq = F, .main = 'twb[[1]] V-usage', .coord.flip = F)
-
-
-###################################################
-### code chunk number 16: tcrvignette.Rnw:249-251
-###################################################
+## ----eval=TRUE,echo=TRUE-------------------------------------------------
 cmv <- data.frame(CDR3.amino.acid.sequence = c('CASSSANYGYTF', 'CSVGRAQNEQFF', 'CASSLTGNTEAFF', 'CASSALGGAGTGELFF', 'CASSLIGVSSYNEQFF'),
-                  V.segments = c('TRBV4-1', 'TRBV4-1', 'TRBV4-1', 'TRBV4-1', 'TRBV4-1'), stringsAsFactors = F)
+                  V.genes = c('TRBV4-1', 'TRBV4-1', 'TRBV4-1', 'TRBV4-1', 'TRBV4-1'), stringsAsFactors = F)
 
-
-###################################################
-### code chunk number 17: tcrvignette.Rnw:254-255
-###################################################
 cmv
 
-
-###################################################
-### code chunk number 18: tcrvignette.Rnw:258-285
-###################################################
+## ----eval=TRUE,echo=TRUE-------------------------------------------------
 twb <- set.rank(twb)
 # Case 1.
 cmv.imm.ex <- 
@@ -146,11 +97,11 @@ head(cmv.imm.ex)
 # Case 2.
 # Search for CDR3 sequences with hamming distance <= 1
 # to the one of the cmv$CDR3.amino.acid.sequence with
-# matching V-segments. Return ranks of found sequences.
+# matching V genes. Return ranks of found sequences.
 cmv.imm.hamm.v <- 
   find.clonotypes(twb[1:3], cmv, 'hamm', 'Rank', 
                   .target.col = c('CDR3.amino.acid.sequence',
-                                  'V.segments'),
+                                  'V.gene'),
                   .verbose = F)
 head(cmv.imm.hamm.v)
 
@@ -159,155 +110,159 @@ head(cmv.imm.hamm.v)
 # using levenshtein distance and the "Read.count" column.
 cmv.imm.lev.v <- 
   find.clonotypes(twb[1:3], cmv, 'lev', 
-                  .target.col = c('CDR3.amino.acid.sequence', 'V.segments'),
+                  .target.col = c('CDR3.amino.acid.sequence', 'V.gene'),
                   .verbose = F)
 head(cmv.imm.lev.v)
 
+## ----eval=TRUE,echo=TRUE-------------------------------------------------
+imm1.vs <- geneUsage(twb[[1]], HUMAN_TRBV)
+head(imm1.vs)
 
-###################################################
-### code chunk number 19: tcrvignette.Rnw:292-298
-###################################################
-# data(twb)
-# Compute summary space of clones, that occupy
-# [0, .05) and [.05, 1] proportion.
-clonal.space.homeostasis(twb, c(Low = .05, High = 1))
-# Use default arguments:
-clonal.space.homeostasis(twb[[1]])
+imm.vs.all <- geneUsage(twb, HUMAN_TRBV)
+imm.vs.all[1:10, 1:4]
 
+# Compute joint V-J counts
+imm1.vj <- geneUsage(twb[[1]], list(HUMAN_TRBV, HUMAN_TRBJ))
+imm1.vj[1:5, 1:5]
 
-###################################################
-### code chunk number 20: tcrvignette.Rnw:310-323
-###################################################
+## ----eval=TRUE, echo=TRUE, message=FALSE, fig.align='center', fig.height=5, fig.width=7----
+# Put ".dodge = F" to get distinct plot for every data frame in the given list.
+vis.gene.usage(twb, HUMAN_TRBJ, .main = 'twb J-usage dodge', .dodge = T)
+
+## ----eval=TRUE, echo=TRUE, message=FALSE, fig.align='center', fig.height=6, fig.width=9----
+vis.gene.usage(twb, HUMAN_TRBJ, .main = 'twb J-usage column', .dodge = F, .ncol = 2)
+
+## ----eval=TRUE, echo=TRUE, message=FALSE, fig.align='center', fig.height=5, fig.width=7----
+vis.gene.usage(imm1.vs, NA, .main = 'twb[[1]] V-usage', .coord.flip = F)
+
+## ----eval=T, echo=TRUE, fig.align='center'-------------------------------
+                              # Transform "0:100" to distribution with Laplace correction 
+entropy(0:100, .laplace = 1)  # (i.e., add "1" to every value before transformation).
+                              
+entropy.seg(twb, HUMAN_TRBV)  # Compute entropy of V-segment usage for each data frame.
+                  
+js.div.seg(twb[1:2], HUMAN_TRBV, .verbose = F)
+imm.js <- js.div.seg(twb, HUMAN_TRBV, .verbose = F) 
+vis.radarlike(imm.js, .ncol = 2)
+
+## ----eval=TRUE, echo=TRUE, fig.align='center', fig.height=4.5, fig.width=6----
+pca.segments(twb, .genes = HUMAN_TRBV)  # Plot PCA results of V-segment usage.
+
+# Return object of class "prcomp"
+class(pca.segments(twb, .do.plot = F, .genes = HUMAN_TRBV))
+
+## ----eval=TRUE, echo=T, fig.align='center', warning=FALSE----------------
 # Equivalent to intersect(twb[[1]]$CDR3.nucleotide.sequence,
 #                         twb[[2]]$CDR3.nucleotide.sequence)
-# or intersectCount(twb[[1]]$CDR3.nucleotide.sequence,
-#                    twb[[2]]$CDR3.nucleotide.sequence)
-# "n" stands for a "CDR3.nucleotide.sequence" column, "e" for exact match.
-intersect(twb[[1]], twb[[2]], 'n0e')
-# "a" stands for "CDR3.amino.acid.sequence" column.
-# "v" means that intersect should also use the "V.segments" column.
-intersect(twb[[1]], twb[[2]], 'ave')
-# Works also on lists, performs all possible pairwise intersections.
-intersect(twb, 'ave')
-# Plot a heatmap of number of shared clonotypes.
-vis.heatmap(intersect(twb, 'ave'), .title = 'twb - (ave)-intersection', .labs = '')
+repOverlap(twb[1:2], 'exact', 'nuc', .verbose = F)
 
+# Equivalent to intersectClonesets(twb, "n0e", .norm = T)
+repOverlap(twb, 'exact', 'nuc', .norm = T, .verbose = F)
+# Intersect by amino acid clonotypes + V genes
+repOverlap(twb, 'exact', 'aa', .vgene = T, .verbose = F)
 
-###################################################
-### code chunk number 21: tcrvignette.Rnw:330-336
-###################################################
+# Plot a heatmap of the number of shared clonotypes.
+vis.heatmap(repOverlap(twb, 'exact', 'aa', .vgene = T, .verbose = F), .title = 'twb - (ave)-intersection', .labs = '')
+
+## ----eval=TRUE, echo=TRUE------------------------------------------------
 # Get logic vector of shared elements, where
 # elements are tuples of CDR3 nucleotide sequence and corresponding V-segment
 imm.1.2 <- intersectLogic(twb[[1]], twb[[2]],
-                           .col = c('CDR3.amino.acid.sequence', 'V.segments'))  
+                           .col = c('CDR3.amino.acid.sequence', 'V.gene'))  
 # Get elements which are in both twb[[1]] and twb[[2]].
-head(twb[[1]][imm.1.2, c('CDR3.amino.acid.sequence', 'V.segments')])
+head(twb[[1]][imm.1.2, c('CDR3.amino.acid.sequence', 'V.gene')])
 
-
-###################################################
-### code chunk number 22: tcrvignette.Rnw:342-344
-###################################################
+## ----eval=TRUE, echo=T, fig.align='center', fig.height=6.5, fig.width=10, warning=FALSE----
 twb.top <- top.cross(.data = twb, .n = seq(500, 10000, 500), .verbose = F, .norm = T)
 top.cross.plot(twb.top)
 
-
-###################################################
-### code chunk number 23: tcrvignette.Rnw:351-359
-###################################################
-# Evaluate the diversity of clones by the ecological diversity index.
-sapply(twb, function (x) diversity(x$Read.count))
-# Compute the diversity as inverse probability of choosing two similar clones.
-sapply(twb, function (x) inverse.simpson(x$Read.count))
-# Evaluate the skewness of clonal distribution.
-sapply(twb, function (x) gini(x$Read.count))
-# Compute diversity of repertoire using Chao index.
-t(sapply(twb, function (x) chao1(x$Read.count)))
-
-
-###################################################
-### code chunk number 24: tcrvignette.Rnw:377-380
-###################################################
-cols <- c('CDR3.amino.acid.sequence', 'Read.count')
+## ----eval=TRUE, echo=TRUE, results='hold'--------------------------------
 # Apply the Morisitas overlap index to the each pair of repertoires.
-apply.symm(twb, function (x,y) morisitas.index(x[, cols], y[, cols]), .verbose = F)
+# Use information about V genes (i.e. one CDR3 clonotype is equal to another
+# if and only if their CDR3 aa sequences are equal and their V genes are equal)
+repOverlap(twb, 'morisita', 'aa', 'read.count', .vgene = T, .verbose = F)
 
-
-###################################################
-### code chunk number 25: tcrvignette.Rnw:394-404
-###################################################
-                              # Transform "0:100" to distribution with Laplace correction 
-entropy(0:100, .laplace = 1)  # (i.e., add "1" to every value before transformation).
-entropy.seg(twb)  # Compute entropy of V-segment usage for each data frame. Same to
-                  # apply(freq.Vb(twb)[,-1], 2, entropy)
-# Next expression is equivalent to the expression
-# js.div(freq.Vb(twb[[1]])[,2], freq.Vb(twb[[2]])[,2], .norm.entropy = T)
-js.div.seg(twb[[1]], twb[[2]], .verbose = F)
-# Also works when input arguments are list of data frames.
-imm.js <- js.div.seg(twb, .verbose = F) 
-vis.radarlike(imm.js, .ncol = 2)
-
-
-###################################################
-### code chunk number 26: tcrvignette.Rnw:410-412
-###################################################
-pca.segments(twb)                       # Plot PCA results of V-segment usage.
-class(pca.segments(twb, .do.plot = F))  # Return object of class "prcomp"
-
-
-###################################################
-### code chunk number 27: tcrvignette.Rnw:418-425
-###################################################
-# Compute shared repertoire of amino acid CDR3 sequences and V-segments
-# which has been found in two or more people.
-imm.shared <- shared.repertoire(.data = twb, .type = 'avc', .min.ppl = 2, .verbose = F)
+## ----eval=TRUE, echo=TRUE------------------------------------------------
+# Compute shared repertoire of amino acid CDR3 sequences and V genes
+# which has been found in two or more people and return the Read.count column
+# of such clonotypes from each data frame in the input list.
+imm.shared <- shared.repertoire(.data = twb, .type = 'avrc', .min.ppl = 2, .verbose = F)
 head(imm.shared)
 shared.representation(imm.shared)  # Number of shared sequences.
-cosine.sharing(imm.shared)         # Compute cosing similarity on shared sequences.
-# It seems like repetoires are clustering in three groups: (1,2), (3,4) and (5,6).
 
+## ----eval=TRUE, echo=TRUE, results='hold'--------------------------------
+# Evaluate the diversity of clones by the ecological diversity index.
+repDiversity(twb, 'div', 'read.count')
+sapply(twb, function (x) diversity(x$Read.count))
 
-###################################################
-### code chunk number 28: tcrvignette.Rnw:440-443 (eval = FALSE)
-###################################################
-## p1 <- vis.count.len(twb[[1]])
-## p2 <- vis.number.count(twb[[1]])
-## grid.arrange(p1, p2, ncol = 2)
+## ----eval=TRUE, echo=TRUE, results='hold'--------------------------------
+# Compute the diversity as the inverse probability of choosing two similar clonotypes.
+repDiversity(twb, 'inv.simp', 'read.prop')
+sapply(twb, function (x) inverse.simpson(x$Read.proportion))
 
+## ----eval=TRUE, echo=TRUE, results='hold'--------------------------------
+# Evaluate the skewness of clonal distribution.
+repDiversity(twb, 'gini.simp', 'read.prop')
+sapply(twb, function (x) gini.simpson(x$Read.proportion))
 
-###################################################
-### code chunk number 29: tcrvignette.Rnw:462-464
-###################################################
-imm.pca <- pca.segments(twb, scale. = T, .do.plot = F)
-vis.pca(imm.pca, list(AB = c(1,2), CD = c(3,4)))
+## ----eval=TRUE, echo=TRUE, results='hold'--------------------------------
+# Compute diversity of repertoire using Chao index.
+repDiversity(twb, 'chao1', 'read.count')
+sapply(twb, function (x) chao1(x$Read.count))
 
+## ----eval=TRUE, echo=TRUE, fig.height=4, fig.width=5.5, fig.align='center'----
+vis.count.len(twb[[1]], .name = "twb[[1]] CDR3 lengths", 
+              .col = "Read.count")
 
-###################################################
-### code chunk number 30: tcrvignette.Rnw:471-473
-###################################################
-d <- kmer.profile(c('CASLL', 'CASSQ', 'CASGL'))
-vis.logo(d)
+## ----eval=TRUE, echo=TRUE, fig.height=4, fig.width=5.5, fig.align='center', warning=FALSE, message=FALSE----
+# I comment this to avoid a strange bug in ggplot2. Will uncomment later.
+# vis.number.count(twb[[1]], .name = "twb[[1]] count distribution")
 
+## ----echo=TRUE, eval=TRUE, fig.height=4, fig.width=5.5, message=FALSE, fig.align='center'----
+vis.top.proportions(twb, c(10, 500, 3000, 10000), .col = "Read.count")
 
-###################################################
-### code chunk number 31: tcrvignette.Rnw:481-484
-###################################################
-# data(twb)
+## ----eval=TRUE, echo=TRUE, fig.height=4, fig.width=6.5, fig.align='center'----
 twb.space <- clonal.space.homeostasis(twb)
 vis.clonal.space(twb.space)
 
+## ----eval=TRUE, echo=TRUE, fig.align='center', warning=FALSE, message=FALSE----
+twb.shared <- repOverlap(twb, "exact", .norm = F, .verbose = F)
+vis.heatmap(twb.shared, .title = "Twins shared nuc clonotypes", 
+            .labs = c("Sample in x", "Sample in y"), .legend = "# clonotypes")
 
-###################################################
-### code chunk number 32: tcrvignette.Rnw:491-495
-###################################################
+## ----eval=T, echo=TRUE, fig.align='center'-------------------------------
+twb.js <- js.div.seg(twb, HUMAN_TRBV, .verbose = F) 
+vis.radarlike(twb.js, .ncol = 2)
+
+## ----eval=TRUE, echo=TRUE, message=FALSE, fig.align='center', fig.height=5, fig.width=7----
+vis.gene.usage(twb[[1]], HUMAN_TRBV, .main = 'Sample I V-usage')
+
+## ----eval=TRUE, echo=TRUE, message=FALSE, fig.align='center', fig.height=7, fig.width=5----
+vis.gene.usage(twb[[2]], HUMAN_TRBV, .main = 'Sample II V-usage', .coord.flip = T)
+
+## ----eval=TRUE, echo=TRUE, message=FALSE, fig.align='center', fig.height=5, fig.width=7----
+twb.jusage <- geneUsage(twb, HUMAN_TRBJ)
+vis.gene.usage(twb.jusage, .main = 'Twins J-usage', .dodge = T)
+
+## ----eval=TRUE, echo=TRUE, message=FALSE, fig.align='center', fig.height=6, fig.width=9----
+vis.gene.usage(twb, HUMAN_TRBJ, .main = 'Twins J-usage', .dodge = F, .ncol = 2)
+
+## ----eval=TRUE, echo=TRUE, fig.align='center', fig.height=4.5, fig.width=6----
+twb.pca <- pca.segments(twb, .do.plot = F) 
+vis.pca(pca.segments(twb, .do.plot = F, .genes = HUMAN_TRBV), .groups = list(GroupA = c(1,2), GroupB = c(3,4)))
+
+## ----eval=TRUE, echo=TRUE, fig.align='center', fig.width=6, fig.height=5.5, warning=FALSE, message=FALSE----
+km <- get.kmers(twb[[1]]$CDR3.amino.acid.sequence, .head = 100, .k = 7, .verbose = F)
+d <- kmer.profile(km)
+vis.logo(d)
+
+## ----eval=TRUE, echo=TRUE------------------------------------------------
 # data(twb)
 twb.shared <- shared.repertoire(twb, .head = 1000, .verbose = F)
 G <- mutation.network(twb.shared)
 G
 
-
-###################################################
-### code chunk number 33: tcrvignette.Rnw:500-512
-###################################################
+## ----eval=TRUE, echo=TRUE------------------------------------------------
 # data(twb)
 # twb.shared <- shared.repertoire(twb, .head = 1000)
 # G <- mutation.network(twb.shared)
@@ -316,45 +271,33 @@ get.group.names(G, "twins", 1)
 get.group.names(G, "twins", 300)
 get.group.names(G, "twins", c(1,2,3), F)
 get.group.names(G, "twins", 300, F)
+
 # Because we have only two groups, we can assign more readable attribute.
 V(G)$twin.names <- get.group.names(G, "twins")
 V(G)$twin.names[1]
 V(G)$twin.names[300]
 
-
-###################################################
-### code chunk number 34: tcrvignette.Rnw:517-521
-###################################################
+## ----eval=TRUE, echo=TRUE------------------------------------------------
 # data(twb)
 # twb.shared <- shared.repertoire(twb, .head = 1000)
 # G <- mutation.network(twb.shared)
 head(mutated.neighbours(G, 1)[[1]])
 
-
-###################################################
-### code chunk number 35: tcrvignette.Rnw:532-534
-###################################################
+## ----eval=TRUE, echo=TRUE------------------------------------------------
 head(get.kmers(twb[[1]]$CDR3.amino.acid.sequence, 100, .meat = F, .verbose = F))
 head(get.kmers(twb[[1]], .meat = T, .verbose = F))
 
-
-###################################################
-### code chunk number 36: tcrvignette.Rnw:544-548
-###################################################
+## ----eval=TRUE, echo=TRUE------------------------------------------------
 revcomp(c('AAATTT', 'ACGTTTGGA'))
 cbind(bunch.translate(twb[[1]]$CDR3.nucleotide.sequence[1:10]),
       twb[[1]]$CDR3.amino.acid.sequence[1:10])
 gc.content(twb[[1]]$CDR3.nucleotide.sequence[1:10])
 
-
-###################################################
-### code chunk number 37: tcrvignette.Rnw:554-560
-###################################################
+## ----eval=TRUE, echo=TRUE------------------------------------------------
 codon.variants('LQ')
 translated.nucl.sequences(c('LQ', 'CASSLQ'))
 reverse.translation('LQ')
 translated.nucl.sequences('LQ', 'XXXXXG')
 codon.variants('LQ', 'XXXXXG')
 reverse.translation('LQ', 'XXXXXG')
-
 

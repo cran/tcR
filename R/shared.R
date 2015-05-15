@@ -12,38 +12,39 @@
 #' \code{shared.repertoire} - make a shared repertoire of sequences from the given list of data frames.
 #' 
 #' \code{shared.matrix} - leave columns, which related to the count of sequences in people, and return them as a matrix.
-#' I.e., this functions will remove such columns as 'CDR3.amino.acid.sequence', 'V.segments', 'People'.
+#' I.e., this functions will remove such columns as 'CDR3.amino.acid.sequence', 'V.gene', 'People'.
 #' 
 #' @usage
-#' shared.repertoire(.datalist, .type = 'avc', .min.ppl = 1, .head = -1,
+#' shared.repertoire(.datalist, .type = 'avrc', .min.ppl = 1, .head = -1,
 #'                   .clear = T, .verbose = T, .by.col = '', .sum.col = '',
 #'                   .max.ppl = length(.datalist))
 #' 
 #' shared.matrix(.shared.rep)
 #' 
 #' @param .datalist List with data frames.
-#' @param .type String of length 3 denotes how to create a shared repertoire. See "Details" for
+#' @param .type String of length 4 denotes how to create a shared repertoire. See "Details" for
 #' more information. If supplied, than parameters \code{.by.col} and \code{.sum.col} will be ignored. If not supplied, than columns
 #' in \code{.by.col} and \code{.sum.col} will be used.
 #' @param .min.ppl At least how many people must have a sequence to leave this sequence in the shared repertoire.
 #' @param .head Parameter for the \code{head} function, applied to all data frames before clearing.
-#' @param .clear If T than remove all sequences which have symbols "~" or "*" (i.e., out-of-frame sequences for amino acid sequences).
-#' @param .verbose If T than output progress.
+#' @param .clear if T then remove all sequences which have symbols "~" or "*" (i.e., out-of-frame sequences for amino acid sequences).
+#' @param .verbose if T then output progress.
 #' @param .by.col Character vector with names of columns with sequences and their parameters (like segment) for using for creating a shared repertoire.
 #' @param .sum.col Character vector of length 1 with names of the column with count, percentage or any other numeric chaaracteristic of sequences for using for creating a shared repertoire.
 #' @param .max.ppl At most how many people must have a sequence to leave this sequence in the shared repertoire.
 #' @param .shared.rep Shared repertoire.
 #' 
 #' @details
-#' Parameter \code{.type} is a string of length 3, where:
+#' Parameter \code{.type} is a string of length 4, where:
 #' \enumerate{
 #'  \item First character stands either for the letter 'a' for taking the "CDR3.amino.acid.sequence" column or
 #' for the letter 'n' for taking the "CDR3.nucleotide.sequence" column.
-#'  \item Second character stands whether or not take the V.segments column. Possible values are '0' (zero) stands
-#' for taking no additional columns, 'v' stands for taking the "V.segments" column.
-#'  \item Third character stands for name of the column to choose as numeric characteristic of sequences. Possible values are
-#' "c" for the "Read.count" column, "p" for the "Read.proportion" column, "r" for the "Rank" column or "i" for the "Index" column.
-#' If "Rank" or "Index" isn't in the given repertoire, than it will be created using \code{set.rank} function using default "Read.count" column.
+#'  \item Second character stands whether or not take the V.gene column. Possible values are '0' (zero) stands
+#' for taking no additional columns, 'v' stands for taking the "V.gene" column.
+#'  \item Third character stands for using either UMIs or reads in choosing the column with numeric characterisitc (see the next letter).
+#'  \item Fourth character stands for name of the column to choose as numeric characteristic of sequences. It depends on the third letter. Possible values are
+#' "c" for the "Umi.count" (if 3rd character is "u") / "Read.count" column (if 3rd character is "r"), "p" for the "Umi.proportion" / "Read.proportion" column, "r" for the "Rank" column or "i" for the "Index" column.
+#' If "Rank" or "Index" isn't in the given repertoire, than it will be created using \code{set.rank} function using "Umi.count" / "Read.count" column.
 #' }
 #' 
 #' @return
@@ -58,10 +59,10 @@
 #' # if the "Rank" column hasn't been found.
 #' immdata <- set.rank(immdata)
 #' # Generate shared repertoire using "CDR3.amino.acid.sequence" and
-#' # "V.segments" columns and with rank.
-#' imm.shared.av <- shared.repertoire(immdata, 'avr')
+#' # "V.gene" columns and with rank.
+#' imm.shared.av <- shared.repertoire(immdata, 'avrc')
 #' }
-shared.repertoire <- function (.datalist, .type = 'avc', .min.ppl = 1, .head = -1, .clear = T,
+shared.repertoire <- function (.datalist, .type = 'avrc', .min.ppl = 1, .head = -1, .clear = T,
                                .verbose = T, .by.col = '', .sum.col = '', .max.ppl = length(.datalist)) {
   
   .process.df <- function (.data, .bc, .sc) {
@@ -76,10 +77,14 @@ shared.repertoire <- function (.datalist, .type = 'avc', .min.ppl = 1, .head = -
     # If .data$Rank or .data$Index is NULL, than generate this columns
     # using the "Read.count" column.
     if (is.null(.data[[.sc]])) {
-      if (.sc == 'Rank') {
-        .data <- set.rank(.data)
+      if (.sc == 'Read.rank') {
+        .data <- set.rank(.data, 'Read.count')
+      } else if (.sc == 'Umi.rank') {
+        .data <- set.rank(.data, 'Umi.count')
+      } else if (.sc == 'Read.rank') {
+        .data <- set.index(.data, 'Read.count')
       } else {
-        .data <- set.index(.data)
+        .data <- set.index(.data, 'Umi.count')
       }
     }
     
@@ -97,22 +102,38 @@ shared.repertoire <- function (.datalist, .type = 'avc', .min.ppl = 1, .head = -
     if (substr(.type, 1, 1) == 'a') { .by.col <- 'CDR3.amino.acid.sequence' }
     else { .by.col <- 'CDR3.nucleotide.sequence' }
     
-    if (substr(.type, 2, 2) == 'v') { .by.col <- c(.by.col, 'V.segments') }
+    if (substr(.type, 2, 2) == 'v') { .by.col <- c(.by.col, 'V.gene') }
   }
   
   if (nchar(.sum.col) == 0) {
-    # read count
-    if (substr(.type, 3, 3) == 'c') {
-      .sum.col <- 'Read.count'
-    } else if (substr(.type, 3, 3) == 'p') {
-      .sum.col <- 'Read.proportion'
-    } else if (substr(.type, 3, 3) == 'r') {
-      .sum.col <- 'Rank'
-    } else if (substr(.type, 3, 3) == 'i') {
-      .sum.col <- 'Index'
+    # barcode count
+    if (substr(.type, 3, 3) == 'u') {
+      if (substr(.type, 4, 4) == 'c') {
+        .sum.col <- 'Umi.count'
+      } else if (substr(.type, 4, 4) == 'p') {
+        .sum.col <- 'Umi.proportion'
+      } else if (substr(.type, 4, 4) == 'r') {
+        .sum.col <- 'Umi.rank'
+      } else if (substr(.type, 4, 4) == 'i') {
+        .sum.col <- 'Umi.index'
+      } else {
+        # As a default option.
+        .sum.col <- 'Umi.count'
+      }
     } else {
-      # As a default option.
-      .sum.col <- 'Read.count'
+      # read count
+      if (substr(.type, 4, 4) == 'c') {
+        .sum.col <- 'Read.count'
+      } else if (substr(.type, 4, 4) == 'p') {
+        .sum.col <- 'Read.proportion'
+      } else if (substr(.type, 4, 4) == 'r') {
+        .sum.col <- 'Read.rank'
+      } else if (substr(.type, 4, 4) == 'i') {
+        .sum.col <- 'Read.index'
+      } else {
+        # As a default option.
+        .sum.col <- 'Read.count'
+      }
     }
   }
   
@@ -182,7 +203,7 @@ shared.matrix <- function (.shared.rep) {
 #' 
 #' @param .shared.rep Shared repertoire, obtained from the function \code{shared.repertoire}.
 #' @param ... Parameters passed to the \code{prcomp} function.
-#' @param .log If T than apply log to the after adding laplace correction equal to one.
+#' @param .log if T then apply log to the after adding laplace correction equal to one.
 #' @param .min.ppl Filter: get sequences with # people >= .min.ppl.
 #' @param .max.ppl Filter: get sequences with # people <= .max.ppl.
 #' 

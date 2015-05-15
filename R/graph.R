@@ -29,7 +29,7 @@
 #' get.people.names(G, 300, F)  # list(c("Subj.A", "Subj.B"))
 #' }
 mutation.network <- function (.data, .method = c('hamm', 'lev'), .max.errors = 1,
-                                   .label.col = 'CDR3.amino.acid.sequence', .seg.col = 'V.segments', .prob.col = 'Probability') {
+                                   .label.col = 'CDR3.amino.acid.sequence', .seg.col = 'V.gene', .prob.col = 'Probability') {
   # Make vertices and edges.
   if (has.class(.data, 'character')) {
     .data <- data.frame(A = .data, stringsAsFactors = F)
@@ -109,7 +109,10 @@ set.people.vector <- function (.G, .shared.rep) {
                              apply(as.matrix(.shared.rep[, -(1:(match('People', colnames(.shared.rep))))]),
                                    1,
                                    function (row) { paste0(as.integer(row > 0), collapse='') }))
-  set.vertex.attribute(.G, 'npeople', V(.G), .shared.rep[['People']])
+  .G <- set.vertex.attribute(.G, 'npeople', V(.G),
+                             apply(as.matrix(.shared.rep[, -(1:(match('People', colnames(.shared.rep))))]),
+                                   1,
+                                   function (row) { sum(row > 0) }))
 }
 
 get.people.names <- function (.G, .V = V(.G), .paste = T) {
@@ -142,7 +145,7 @@ get.people.names <- function (.G, .V = V(.G), .paste = T) {
 #' @param .attr.name Name of the new vertex attribute.
 #' @param .V Indices of vertices.
 #' @param .groups List with integer vector with indices of subjects for each group.
-#' @param .paste If T than return character string with concatenated group names, else return list with character vectors
+#' @param .paste if T then return character string with concatenated group names, else return list with character vectors
 #' with group names.
 #' 
 #' @return igraph object with new vertex attribute \code{.attr.name} with binary strings for \code{set.group.vector}.
@@ -233,3 +236,55 @@ mutated.neighbours <- function (.G, .V, .order = 1) {
     res
     } )
 }
+
+
+# srcppl.distribution <- function (.G) {  
+#   one.count <- sapply(strsplit(V(.G)$people, '', fixed = T, useBytes = T), function (x) sum(x == '1'))
+# #   mean(V(.G)$npeople)
+# mean(one.count)
+# }
+# 
+# 
+# neippl.distribution <- function (.G, .exclude.zeros = F) {
+#   if (.exclude.zeros) {
+#     .G <- induced.subgraph(.G, degree(.G) != 0)
+#   }
+#   
+#   one.count <- sapply(strsplit(V(.G)$people, '', fixed = T, useBytes = T), function (x) sum(x == '1'))
+# #   one.count <- V(.G)$npeople
+#   quantile(sapply(neighborhood(.G, 1), function (x) {
+#     if (length(x) == 1) {
+#       0
+#     } else {
+#       mean(one.count[x[-1]]) / (length(x) - 1)
+#     }
+#   }), prob = c(.025, .975))
+# }
+# 
+# 
+# pplvar.distribution <- function (.G, .exclude.zeros = F) {
+#   if (.exclude.zeros) {
+#     .G <- induced.subgraph(.G, degree(.G) != 0)
+#   }
+#   
+#   ppl.inds <- lapply(strsplit(V(.G)$people, '', fixed = T, useBytes = T), function (x) which(x == '1'))
+#   c1 <- quantile(sapply(neighborhood(.G, 1), function (x) {
+#     if (length(x) == 1) {
+#       0
+#     } else {
+# #       length(unique(unlist(ppl.inds[x[-1]]))) / length(x[-1])
+#       length(unique( unlist(ppl.inds[x[-1]]) [ !(unlist(ppl.inds[x[-1]]) %in% unlist(ppl.inds[x[1]])) ] ))
+#     }
+#   }), prob = c(.25, .75))
+# 
+#   c2 <- mean(sapply(neighborhood(.G, 1), function (x) {
+#     if (length(x) == 1) {
+#       0
+#     } else {
+# #       length(unique(unlist(ppl.inds[x[-1]]))) / length(x[-1])
+#       length(unique( unlist(ppl.inds[x[-1]]) [ !(unlist(ppl.inds[x[-1]]) %in% unlist(ppl.inds[x[1]])) ] ))
+#     }
+#   }))
+# 
+#   c(c1[1], Mean = c2, c1[2])
+# }

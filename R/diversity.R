@@ -4,9 +4,11 @@
 #' 
 #' @description
 #' Functions for evaluating the diversity of species or objects in the given distribution.
+#' See the \code{repOverlap} function for working with clonesets and a general interface to
+#' all of this functions.
 #' 
 #' Warning!
-#' Functions will check if .data if a distribution of random variable (sum == 1) or not.
+#' Functions will check if .data is a distribution of a random variable (sum == 1) or not.
 #' To force normalisation and / or to prevent this, set .do.norm to TRUE (do normalisation)
 #' or FALSE (don't do normalisation), respectively.
 #' 
@@ -44,14 +46,14 @@
 #' @param .data Numeric vector of values for proportions or for numbers of individuals.
 #' @param .q q-parameter for the Diversity index.
 #' @param .do.norm One of the three values - NA, T or F. If NA than check for distrubution (sum(.data) == 1)
-#' and normalise if needed with the given laplace correction value. If T than do normalisation and laplace
+#' and normalise if needed with the given laplace correction value. if T then do normalisation and laplace
 #' correction. If F than don't do normalisaton and laplace correction.
 #' @param .laplace Value for Laplace correction which will be added to every value in the .data.
 #' 
 #' @return Numeric vector of length 1 with value for all functions except \code{chao1}, which returns 4 values:
 #' estimated number of species, standart deviation of this number and two 95% confidence intervals for the species number.
 #' 
-#' @seealso \link{entropy}, \link{similarity}
+#' @seealso \link{repOverlap}, \link{entropy}, \link{similarity}
 #' 
 #' @examples
 #' data(twb)
@@ -78,7 +80,7 @@ diversity <- function (.data, .q = 5, .do.norm = NA, .laplace = 0) {
 }
 
 gini <- function (.data, .do.norm = NA, .laplace = 0) {
-  .data <- sort(check.distribution(.data, .do.norm, .laplace))
+  .data <- sort(check.distribution(.data, .do.norm, .laplace, .warn.sum = F))
   n <- length(.data)
   1 / n * (n + 1 - 2 * sum((n + 1 - 1:n) * .data) / sum(.data))
 }
@@ -119,7 +121,7 @@ chao1 <- function (.data) {
   # f1 != && f2 != 0
   else {
     const <- (n - 1) / n
-    e <- D + f1^2 / (2 * f1) * const
+    e <- D + f1^2 / (2 * f2) * const
     f12 <- f1 / f2
     v <- f2 * (const * f12^2 / 2 + const^2 * f12^3 + const^2 * f12^4 / 4)
     t <- e - D
@@ -140,9 +142,9 @@ chao1 <- function (.data) {
 #' @param .data Data frame or a list with data frames.
 #' @param .step Step's size.
 #' @param .quantile Numeric vector of length 2 with quantiles for confidence intervals.
-#' @param .extrapolation If N > 0 than perform extrapolation of all samples to the size of the max one +N reads or barcodes.
+#' @param .extrapolation If N > 0 than perform extrapolation of all samples to the size of the max one +N reads or UMIs.
 #' @param .col Column's name from which choose frequency of each clone.
-#' @param .verbose If T than print progress bar.
+#' @param .verbose if T then print progress bar.
 #' 
 #' @return
 #' Data frame with first column for sizes, second columns for the first quantile,
@@ -162,9 +164,9 @@ chao1 <- function (.data) {
 #' \dontrun{
 #' rarefaction(immdata, .col = "Read.count")
 #' }
-rarefaction <- function (.data, .step = 30000, .quantile = c(.025, .975), .extrapolation = 200000, .col = 'Barcode.count', .verbose = T) {
+rarefaction <- function (.data, .step = 30000, .quantile = c(.025, .975), .extrapolation = 200000, .col = 'Umi.count', .verbose = T) {
   if (has.class(.data, 'data.frame')) {
-    .data <- list(Data = .data)
+    .data <- list(Sample = .data)
   }
   
   # multinom

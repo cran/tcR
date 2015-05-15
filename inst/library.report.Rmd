@@ -26,7 +26,6 @@ save(immdata, file = '/home/username/immdata.rda')
 load('../data/twb.rda')
 immdata <- twb[1:2]
 library(tcR)
-data(human.alphabets)
 ```
 
 
@@ -41,8 +40,8 @@ immdata <- head(immdata, N)
 ## Data statistics
 
 ```{r seqstats,warning=FALSE,message=F}
-mitcr.stats(immdata)
-lib.mitcr.stats(immdata)
+cloneset.stats(immdata)
+repseq.stats(immdata)
 ```
 
 
@@ -55,10 +54,10 @@ lib.mitcr.stats(immdata)
 ```{r vusagehist, fig.width=16, fig.height=5,warning=FALSE,message=F}
 if (has.class(immdata, 'list')) {
   for (i in 1:length(immdata)) {
-    plot(vis.V.usage(immdata[[i]], .main = paste0(names(immdata)[i], ' ', 'V-usage')))
+    plot(vis.gene.usage(immdata[[i]], HUMAN_TRBV, .main = paste0(names(immdata)[i], ' ', 'V-usage')))
   }
 } else {
-  vis.V.usage(immdata, .coord.flip=F)
+  vis.gene.usage(immdata, HUMAN_TRBV, .coord.flip=F)
 }
 ```
 
@@ -68,10 +67,10 @@ if (has.class(immdata, 'list')) {
 ```{r jusagehist, fig.width=14, fig.height=5,warning=FALSE,message=F}
 if (has.class(immdata, 'list')) {
   for (i in 1:length(immdata)) {
-    plot(vis.J.usage(immdata[[i]], .main = paste0(names(immdata)[i], ' ', 'J-usage')))
+    plot(vis.gene.usage(immdata[[i]], HUMAN_TRBJ, .main = paste0(names(immdata)[i], ' ', 'J-usage')))
   }
 } else {
-  vis.J.usage(immdata, .coord.flip=F)
+  vis.gene.usage(immdata, HUMAN_TRBJ, .coord.flip=F)
 }
 ```
 
@@ -128,12 +127,12 @@ vis.kmer.histogram(kms, .position = 'fill')
 ```{r muc, fig.width=11,warning=FALSE,message=F}
 clmn <- 'Read.count'
 if (has.class(immdata, 'list')) {
-  if ('Barcode.count' %in% names(immdata[[1]])) {
-    clmn <- 'Barcode.count'
+  if (!is.na(immdata[[1]]$Umi.count[1])) {
+    clmn <- 'Umi.count'
   }
 } else {
-  if ('Barcode.count' %in% names(immdata)) {
-    clmn <- 'Barcode.count'
+  if (!is.na(immdata$Umi.count[1])) {
+    clmn <- 'Umi.count'
   }
 }
 vis.rarefaction(rarefaction(immdata, .col = clmn, .verbose = F), .log = T)

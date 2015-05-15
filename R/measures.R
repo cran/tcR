@@ -30,23 +30,23 @@
 #' @usage
 #' entropy(.data, .norm = F, .do.norm = NA, .laplace = 1e-12)
 #' 
-#' kl.div(.alpha, .beta, .do.norm = NA, .laplace = 0)
+#' kl.div(.alpha, .beta, .do.norm = NA, .laplace = 1e-12)
 #' 
-#' js.div(.alpha, .beta, .do.norm = NA, .laplace = 0, .norm.entropy = F)
+#' js.div(.alpha, .beta, .do.norm = NA, .laplace = 1e-12, .norm.entropy = F)
 #' 
 #' @param .data,.alpha,.beta Vector of values.
-#' @param .norm If T than compute normalised entropy (H / Hmax).
+#' @param .norm if T then compute normalised entropy (H / Hmax).
 #' @param .do.norm One of the three values - NA, T or F. If NA than check for distrubution \code{(sum(.data) == 1)}.
-#' and normalise if needed with the given laplace correction value. If T than do normalisation and laplace
+#' and normalise if needed with the given laplace correction value. if T then do normalisation and laplace
 #' correction. If F than don't do normalisaton and laplace correction.
 #' @param .laplace Value for Laplace correction which will be added to every value in the .data.
-#' @param .norm.entropy If T than normalise JS-divergence by entropy.
+#' @param .norm.entropy if T then normalise JS-divergence by entropy.
 #' 
 #' @return Shannon entropy, Jensen-Shannon divergence or Kullback-Leibler divergence values.
 #' 
 #' @seealso \link{similarity}, \link{diversity}
 entropy <- function (.data, .norm = F, .do.norm = NA, .laplace = 1e-12) {
-  .data <- check.distribution(.data, .do.norm, .laplace)
+  .data <- check.distribution(.data, .do.norm, .laplace, .warn.zero = T)
   res <- - sum(.data * log2(.data))
   if (.norm) {
     res / log2(length(.data))
@@ -55,15 +55,15 @@ entropy <- function (.data, .norm = F, .do.norm = NA, .laplace = 1e-12) {
   }
 }
 
-kl.div <- function (.alpha, .beta, .do.norm = NA, .laplace = 0) {
-  .alpha <- check.distribution(.alpha, .do.norm, .laplace)
-  .beta <- check.distribution(.beta, .do.norm, .laplace)
+kl.div <- function (.alpha, .beta, .do.norm = NA, .laplace = 1e-12) {
+  .alpha <- check.distribution(.alpha, .do.norm, .laplace, .warn.zero = T)
+  .beta <- check.distribution(.beta, .do.norm, .laplace, .warn.zero = T)
   sum(log2(.alpha / .beta) * .alpha)
 }
 
-js.div <- function (.alpha, .beta, .do.norm = NA, .laplace = 0, .norm.entropy = F) {
-  .alpha <- check.distribution(.alpha, .do.norm, .laplace)
-  .beta <- check.distribution(.beta, .do.norm, .laplace)
+js.div <- function (.alpha, .beta, .do.norm = NA, .laplace = 1e-12, .norm.entropy = F) {
+  .alpha <- check.distribution(.alpha, .do.norm, .laplace, .warn.zero = T)
+  .beta <- check.distribution(.beta, .do.norm, .laplace, .warn.zero = T)
   nrm = if (.norm.entropy) 0.5 * (entropy(.alpha, F) + entropy(.beta, F)) else 1
   M <- (.alpha + .beta) / 2
   0.5 * (kl.div(.alpha, M, F) + kl.div(.beta, M, F)) / nrm
@@ -106,6 +106,8 @@ loglikelihood <- function (.data, .base = 2, .do.norm = NA, .laplace = 0.0000000
 #' 
 #' - Horn's overlap index based on Shannon's entropy.
 #' 
+#' Use the \link{repOverlap} function for computing similarities of clonesets.
+#' 
 #' @usage
 #' cosine.similarity(.alpha, .beta, .do.norm = NA, .laplace = 0)
 #' 
@@ -124,10 +126,10 @@ loglikelihood <- function (.data, .base = 2, .do.norm = NA, .laplace = 0.0000000
 #' either two sets or two numbers of elements in sets for \code{jaccard.index}.
 #' @param .a,.b Alpha and beta parameters for Tversky Index. Default values gives the Jaccard index measure.
 #' @param .do.norm One of the three values - NA, T or F. If NA than check for distrubution (sum(.data) == 1)
-#' and normalise if needed with the given laplace correction value. If T than do normalisation and laplace
+#' and normalise if needed with the given laplace correction value. if T then do normalisation and laplace
 #' correction. If F than don't do normalisaton and laplace correction.
 #' @param .laplace Value for Laplace correction.
-#' @param .do.unique If T than call unique on the first columns of the given data.frame or matrix.
+#' @param .do.unique if T then call unique on the first columns of the given data.frame or matrix.
 #' @param .intersection.number Number of intersected elements between two sets. See "Details" for more information.
 #' @details
 #' For \code{morisitas.index} input data are matrices or data.frames with two columns: first column is
@@ -142,20 +144,26 @@ loglikelihood <- function (.data, .base = 2, .do.norm = NA, .laplace = 0.0000000
 #' Overlap coefficient: \code{overlap(X, Y) = |X and Y| / min(|X|, |Y|)}
 #' 
 #' Jaccard index: \code{J(A, B) = |A and B| / |A U B|}
+#' For Jaccard index user can provide |A and B| in \code{.intersection.number} otherwise it will be computed
+#' using \code{base::intersect} function. In this case \code{.alpha} and \code{.beta} expected to be vectors of elements.
+#' If \code{.intersection.number} is provided than \code{.alpha} and \code{.beta} are exptected to be numbers of elements.
 #' 
 #' Formula for Morisita's overlap index is quite complicated and can't be easily shown here, so just look at this webpage: http://en.wikipedia.org/wiki/Morisita%27s_overlap_index
 #' 
 #' 
 #' @return Value of similarity between the given sets or vectors.
 #' 
-#' @seealso \link{intersect}, \link{entropy}, \link{diversity}
+#' @seealso \link{repOverlap}, \link{intersectClonesets}, \link{entropy}, \link{diversity}
 #' 
 #' @examples
 #' \dontrun{
 #' jaccard.index(1:10, 2:20)
-#' a <- length(unique(immdata[[1]][, c('CDR3.amino.acid.sequence', 'V.segments')]))
-#' b <- length(unique(immdata[[2]][, c('CDR3.amino.acid.sequence', 'V.segments')]))
-#' jaccard.index(a, b, intersect(immdata[[1]], immdata[[2]], 'ave'))
+#' a <- length(unique(immdata[[1]][, c('CDR3.amino.acid.sequence', 'V.gene')]))
+#' b <- length(unique(immdata[[2]][, c('CDR3.amino.acid.sequence', 'V.gene')]))
+#' # Next
+#' jaccard.index(a, b, repOverlap(immdata[1:2], .seq = 'aa', .vgene = T))
+#' # is equal to
+#' repOverlap(immdata[1:2], 'jaccard', seq = 'aa', .vgene = T)
 #' }
 cosine.similarity <- function (.alpha, .beta, .do.norm = NA, .laplace = 0) {
   .alpha <- check.distribution(.alpha, .do.norm, .laplace)
@@ -174,7 +182,8 @@ overlap.coef <- function (.alpha, .beta) {
 
 jaccard.index <- function (.alpha, .beta, .intersection.number = NA) {
   if (is.na(.intersection.number)) {
-    length(intersect(.alpha, .beta)) / (length(unique(.alpha)) + length(unique(.beta)) - length(intersect(.alpha, .beta)))
+    abin <- length(intersect(.alpha, .beta))
+    abin / (length(unique(.alpha)) + length(unique(.beta)) - abin)
   } else {
     .intersection.number / (.alpha + .beta - .intersection.number)
   }

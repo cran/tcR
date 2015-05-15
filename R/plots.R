@@ -2,9 +2,9 @@
 
 
 if (getRversion() >= "2.15.1") {
-  utils::globalVariables(c("Segment", 'Size', 'Freq', 'Subject', 'V.segments', 'J.segments', '..count..', 'Time.point', 'Proportion', 'Sequence',
+  utils::globalVariables(c("Segment", 'Size', 'Freq', 'Sample', 'V.gene', 'J.gene', '..count..', 'Time.point', 'Proportion', 'Sequence',
                            'Lower', 'Upper', 'Lengths', 'Read.count', 'Var', 'Value', 'Group', 'variable', 'name', 'value', 'Kmers',
-                           'Count', 'People', 'First', 'Second', 'Var1', 'Q0.025', 'Q0.975', 'Mean', 'Type', 'Clone.size', 'Q1', 'Q2', 'Symbol'))
+                           'Count', 'People', 'First', 'Second', 'Var1', 'Q0.025', 'Q0.975', 'Mean', 'Type', 'Clone.size', 'Q1', 'Q2', 'Symbol', 'Gene', 'Genes', 'Sample'))
 }
 
 
@@ -69,6 +69,7 @@ if (getRversion() >= "2.15.1") {
 #' @param .data Data frame with columns 'CDR3.nucleotide.sequence' and 'Read.count' or list with such data frames.
 #' @param .ncol If .data is a list, than number of columns in a grid of histograms for each data frame in \code{.data}. Else not used.
 #' @param .name Title for this plot.
+#' @param .col Name of the column to use in computing the lengths distribution.
 #' 
 #' @details
 #' If \code{.data} is a data frame, than one histogram will be plotted. Is \code{.data} is a list, than grid of histograms
@@ -84,15 +85,15 @@ if (getRversion() >= "2.15.1") {
 #' # Plot a grid of histograms with 2 columns.
 #' vis.count.len(immdata, 2)
 #' }
-vis.count.len <- function (.data, .ncol = 3, .name = "") {
+vis.count.len <- function (.data, .ncol = 3, .name = "", .col = 'Read.count') {
   if (has.class(.data, 'list')) {
-    return(do.call(grid.arrange, c(lapply(1:length(.data), function (i) vis.count.len(.data[[i]], .name = names(.data)[i])), ncol = .ncol)))
+    return(do.call(grid.arrange, c(lapply(1:length(.data), function (i) vis.count.len(.data[[i]], .col = .col, .name = names(.data)[i])), ncol = .ncol)))
   }
-  tmp <- aggregate(Read.count ~ nchar(CDR3.nucleotide.sequence), .data, sum)
-  names(tmp) <- c('Lengths', 'Read.count')
+  tmp <- aggregate(as.formula(paste0(.col, " ~ nchar(CDR3.nucleotide.sequence)")), .data, sum)
+  names(tmp) <- c('Lengths', "Count")
   ggplot() +
-    geom_histogram(aes(x = Lengths, y = Read.count, fill = Read.count), data = tmp, stat = 'identity', colour = 'black') +
-    .colourblind.gradient(min(tmp$Read.count), max(tmp$Read.count)) +
+    geom_histogram(aes(x = Lengths, y = Count, fill = Count), data = tmp, stat = 'identity', colour = 'black') +
+    .colourblind.gradient(min(tmp$Count), max(tmp$Count)) +
     ggtitle(.name) + theme_linedraw()
 }
 
@@ -102,9 +103,10 @@ vis.count.len <- function (.data, .ncol = 3, .name = "") {
 #' @description
 #' Plot a histogram of distribution of counts of CDR3 nucleotide sequences. On y-axis are number of counts.
 #' 
-#' @param .data Data frame with columns 'CDR3.nucleotide.sequence' and 'Read.count' or list with such data frames.
+#' @param .data Cloneset data frame or a list of clonesets.
 #' @param .ncol If .data is a list, than number of columns in a grid of histograms for each data frame in \code{.data}. Else not used.
 #' @param .name Title for this plot.
+#' @param .col Name of the column with counts.
 #' 
 #' @details
 #' If \code{.data} is a data frame, than one histogram will be plotted. Is \code{.data} is a list, than grid of histograms
@@ -120,17 +122,19 @@ vis.count.len <- function (.data, .ncol = 3, .name = "") {
 #' # Plot a grid of histograms with 2 columns.
 #' vis.number.count(immdata, 2)
 #' }
-vis.number.count <- function (.data, .ncol = 3, .name = 'Histogram of clonotypes read counts') {
+vis.number.count <- function (.data, .ncol = 3, .name = 'Histogram of clonotypes read counts', .col = "Read.count") {
 #   cat('Limits for x-axis set to (0,50). Transform y-axis to sqrt(y).\n')
   
   if (has.class(.data, 'list')) {
-    return(do.call(grid.arrange, c(lapply(1:length(.data), function (i) vis.number.count(.data[[i]], .name = names(.data)[i])), ncol = .ncol)))
+    return(do.call(grid.arrange, c(lapply(1:length(.data), function (i) vis.number.count(.data[[i]], .col = .col, .name = names(.data)[i])), ncol = .ncol)))
   }
   
+  counts <- data.frame(Count = .data[[.col]])
+  
   ggplot() + 
-    xlim(min(.data$Read.count), 300) + 
-    ylab('Number of clonotypes') +
-    geom_histogram(aes(x = Read.count, fill = ..count..), data = .data, binwidth = 1, colour = 'black') +
+    xlim(min(counts$Count), 300) + 
+    ylab('Frequency') +
+    geom_histogram(aes(x = Count, fill = ..count..), data = counts, binwidth = 1, colour = 'black') +
     coord_trans(xtrans = 'log10') + scale_y_log10() +
     ggtitle(.name) + 
     .colourblind.gradient() +
@@ -148,10 +152,10 @@ vis.number.count <- function (.data, .ncol = 3, .name = 'Histogram of clonotypes
 #' @param .data Either a matrix with colnames and rownames specifyed or a data.frame with the first column of
 #' strings for row names and other columns stands for values.
 #' @param .title Main title of the plot.
-#' @param .labs Labs names. Character vector of length 1 (for naming both axis with same name) or 2 (first elements stands for x-axis).
+#' @param .labs Labs names. Character vector of length 2 (for naming x-axis and y-axis).
 #' @param .legend Title for the legend.
 #' @param .na.value Replace NAs with this values.
-#' @param .text If T than print \code{.data} values at tiles.
+#' @param .text if T then print \code{.data} values at tiles.
 #' 
 #' @return ggplot object.
 #' 
@@ -159,12 +163,12 @@ vis.number.count <- function (.data, .ncol = 3, .name = 'Histogram of clonotypes
 #' \dontrun{
 #' # Load your data.
 #' load('immdata.rda')
-#' # Perform intersection by amino acid sequences with V-segments.
-#' imm.av <- intersect(immdata, 'ave')
+#' # Perform cloneset overlap by amino acid sequences with V-segments.
+#' imm.av <- repOverlap(immdata, .seq = 'aa', .vgene = T)
 #' # Plot a heatmap.
 #' vis.heatmap(imm.av, .title = 'Immdata - (ave)-intersection')
 #' }
-vis.heatmap <- function (.data, .title = "Number of shared clonotypes", .labs = 'Subject', .legend = 'Shared clonotypes', .na.value = NA, .text = T) {
+vis.heatmap <- function (.data, .title = "Number of shared clonotypes", .labs = c('Sample', 'Sample'), .legend = 'Shared clonotypes', .na.value = NA, .text = T) {
   if (has.class(.data, 'data.frame')) {
     names <- .data[,1]
     .data <- as.matrix(.data[,-1])
@@ -195,7 +199,7 @@ vis.heatmap <- function (.data, .title = "Number of shared clonotypes", .labs = 
   p <- p + .blues.gradient(min(m$value), max(m$value))
   p + ggtitle(.title) + 
     guides(fill = guide_legend(title=.legend)) +
-    xlab(.labs) + ylab(.labs) + coord_equal() +
+    xlab(.labs[1]) + ylab(.labs[2]) + coord_equal() +
     theme_linedraw() + theme(axis.text.x  = element_text(angle=90)) +
     scale_x_discrete(expand=c(0,0)) + scale_y_discrete(expand=c(0,0))
 }
@@ -214,7 +218,7 @@ vis.heatmap <- function (.data, .title = "Number of shared clonotypes", .labs = 
 #' member is in the individual group.
 #' @param .title Main title of the plot.
 #' @param .labs Labs names. Character vector of length 1 (for naming both axis with same name) or 2 (first elements stands for x-axis).
-#' @param .rotate.x If T than rotate x-axis.
+#' @param .rotate.x if T then rotate x-axis.
 #' @param ... Parameters passed to \code{melt}, applied to \code{.data} before plotting in \code{vis.group.boxplot}.
 #' 
 #' @return ggplot object.
@@ -228,15 +232,15 @@ vis.heatmap <- function (.data, .title = "Number of shared clonotypes", .labs = 
 #'    list(A = c('A1', 'A2'), B = c('B1', 'B2'), C = c('C1', 'C2')),
 #'    c('V segments', 'Frequency')) 
 #' }
-vis.group.boxplot <- function (.data, .groups = list(A = c('A1', 'A2'), D = c('D1', 'D2'), C = c('C1', 'C2')), .labs = c('V segments', 'Frequency'), .title = '', .rotate.x = T, ...) {
+vis.group.boxplot <- function (.data, .groups = list(A = c('A1', 'A2'), D = c('D1', 'D2'), C = c('C1', 'C2')), .labs = c('V genes', 'Frequency'), .title = '', .rotate.x = T, ...) {
   .data <- melt(.data, ...)
   
-  colnames(.data) <- c('Var', 'Subject', 'Value')
-  .data$Group <- as.character(.data$Subject)
+  colnames(.data) <- c('Var', 'Sample', 'Value')
+  .data$Group <- as.character(.data$Sample)
   if (!is.na(.groups)[1]) {
     for (i in 1:length(.groups)) {
       for (name in .groups[[i]]) {
-        .data$Group[.data$Subject == name] <- names(.groups)[i]
+        .data$Group[.data$Sample == name] <- names(.groups)[i]
       }
     }
   }
@@ -261,13 +265,13 @@ vis.group.boxplot <- function (.data, .groups = list(A = c('A1', 'A2'), D = c('D
 #' Plot a histogram or a grid of histograms of V- / J-usage.
 #' 
 #' @param .data Mitcr data frame or a list with mitcr data frames.
-#' 
-#' @param .cast.freq If T than cast \code{freq.Vb} (for \code{vis.V.usage}) or \code{freq.Jb} (for \code{vis.J.usage}) on \code{.data} before plotting.
+#' @param .genes Gene alphabet passed to \link{geneUsage}.
 #' @param .main Main title of the plot.
 #' @param .ncol Number of columns in a grid of histograms if \code{.data} is a list and \code{.dodge} is F.
-#' @param .coord.flip If T than flip coordinates.
+#' @param .coord.flip if T then flip coordinates.
+#' @param .labs Character vector of length 2 with names for x-axis and y-axis.
 #' @param .dodge If \code{.data} is a list, than if this is T plot V-usage for all data frames to the one histogram.
-#' @param ... Parameter passed to \code{freq.segments}. By default the function compute V-usage or J-usage for beta chains
+#' @param ... Parameter passed to \code{geneUsage}. By default the function compute V-usage or J-usage for beta chains
 #' w/o using read counts and w/ "Other" segments.
 #' 
 #' @return ggplot object.
@@ -277,108 +281,56 @@ vis.group.boxplot <- function (.data, .groups = list(A = c('A1', 'A2'), D = c('D
 #' # Load your data.
 #' load('immdata.rda')
 #' # Compute V-usage statistics.
-#' imm1.vs <- freq.Vb(immdata[[1]])
-#' # Two eqivalent calls for plotting the V-usage for all data frames on the one plot:
-#' vis.V.usage(immdata, .cast.freq = T, .main = 'Immdata V-usage [1]', .dodge = T)
-#' # Plot a histogram for one data frame using all gene segment data from V.segments column.
-#' vis.V.usage(immdata[[1]], .cast.freq = F, .main = 'Immdata V-usage [1]')
-#' vis.V.usage(imm1.vs, .cast.freq = F, .main = 'Immdata V-usage [2]', .dodge = T)
+#' imm1.vs <- geneUsage(immdata[[1]], HUMAN_TRBV)
+#' vis.V.usage(immdata, HUMAN_TRBV, .main = 'Immdata V-usage [1]', .dodge = T)
+#' # Plot a histogram for one data frame using all gene segment data from V.gene column.
+#' vis.V.usage(imm1.vs, NA, .main = 'Immdata V-usage [1]')
 #' # Plot a grid of histograms - one histogram for V-usage for each data frame in .data.
-#' vis.V.usage(immdata, .cast.freq = T, .main = 'Immdata V-usage [3]', .dodge = F, .other = F)
-#' # Plot alpha V-usage
-#' vis.V.usage(immdata[[1]], .cast.freq = T, .main = 'Immdata V-usage [4]',
-#' .dodge = F, .other = F, .alphabet = HUMAN_TRAV_ALPHABET)
+#' vis.V.usage(immdata, HUMAN_TRBV, .main = 'Immdata V-usage', .dodge = F, .other = F)
 #' }
-vis.V.usage <- function (.data, .cast.freq = T, .main = 'V-usage', .ncol = 3, .coord.flip = F, .dodge = F, ...) {
-  if (has.class(.data, 'list')) {
-    if (.dodge) {
-      res <- melt(freq.Vb(.data))
-      res <- res[1:nrow(res), ]  # something bad with melt
-      colnames(res) <- c('Segment', 'Subject', 'Freq')
-      p <- ggplot() + 
-        geom_bar(aes(x = Segment, y = Freq, fill = Subject), data = res, stat = 'identity', position = position_dodge(), colour = 'black') +
+vis.gene.usage <- function (.data, .genes = NA, .main = "Gene usage", .ncol = 3, .coord.flip = F, .dodge = F, .labs = c("Gene", "Frequency"), ...) {  
+  if (!is.na(.genes[1])) {
+    res <- geneUsage(.data, .genes, ...)
+  } else {
+    res <- .data
+  }
+  
+  if (class(res[[2]]) != "factor") {
+    res <- melt(res)
+    res <- res[1:nrow(res), ] 
+    colnames(res) <- c('Gene', 'Sample', 'Freq')
+  }
+  
+  if (length(unique(res$Sample)) > 1) {    
+    if (.dodge) {      
+      ggplot() + 
+        geom_bar(aes(x = Gene, y = Freq, fill = Sample), data = res, stat = 'identity', position = position_dodge(), colour = 'black') +
         theme_linedraw() + 
         theme(axis.text.x = element_text(angle=90)) + 
-        .colourblind.discrete(length(.data)) +
-        scale_y_continuous(expand = c(0,0))
-      return(p)
+        .colourblind.discrete(length(unique(res$Sample))) +
+        scale_y_continuous(expand = c(.02,0))
     } else {
-      ps <- lapply(1:length(.data), function (i) {
-        vis.V.usage(.data[[i]], .cast.freq, names(.data)[i], 0, .coord.flip, ...) 
-      })
-      p <- do.call(grid.arrange, c(ps, ncol = .ncol, main = .main) )
-      return(p)
+      res <- split(res, res$Sample)
+      ps <- lapply(1:length(res), function (i) {
+        vis.gene.usage(res[[i]], NA, names(res)[i], 0, .coord.flip, .labs = .labs, ...) 
+      })      
+      do.call(grid.arrange, c(ps, ncol = .ncol, main = .main) )
     }
+    
+  }  
+  else {        
+    p <- ggplot() + 
+      geom_bar(aes(x = Gene, y = Freq, fill = Freq), data = res, stat = 'identity', colour = 'black')
+    
+    if (.coord.flip) { p <- p + coord_flip() }
+    
+    p + theme_linedraw() + 
+      theme(axis.text.x = element_text(angle=90)) + 
+      ggtitle(.main) + 
+      .colourblind.gradient() +
+      scale_y_continuous(expand = c(.02,0)) + 
+      xlab(.labs[1]) + ylab(.labs[2])
   }
-  
-  if (.cast.freq) { 
-    if (! '.alphabet' %in% names(list(...))) {
-      .data <- freq.segments(.data, 'TRBV', ...)
-    } else {
-      .data <- freq.segments(.data, ...)
-    }
-  }
-  
-  if (names(.data)[1] == 'Segment') {
-    # If result from freq.segments functions.
-    p <- ggplot() + geom_bar(aes(x = Segment, y = Freq, fill = Freq), data = .data, stat = 'identity', colour = 'black')
-  }
-  else {
-    # If mitcr data.frame.
-    p <- ggplot() + geom_histogram(aes(x = V.segments, fill = ..count..), data = .data, colour = 'black')
-  }
-  if (.coord.flip) { p <- p + coord_flip() }
-  p + theme_linedraw() + 
-    theme(axis.text.x = element_text(angle=90)) + 
-    ggtitle(.main) + 
-    .colourblind.gradient() +
-    scale_y_continuous(expand = c(.02,0))
-}
-
-vis.J.usage <- function (.data, .cast.freq = T, .main = 'J-usage', .ncol = 3, .coord.flip = F, .dodge = F, ...) {
-  if (has.class(.data, 'list')) {
-    if (.dodge) {
-      res <- melt(freq.Jb(.data))
-      res <- res[1:nrow(res), ]  # something bad with melt
-      colnames(res) <- c('Segment', 'Subject', 'Freq')
-      p <- ggplot() + 
-        geom_bar(aes(x = Segment, y = Freq, fill = Subject), data = res, stat = 'identity', position = position_dodge(), colour = 'black') +
-        theme_linedraw() + 
-        theme(axis.text.x = element_text(angle=90)) + 
-        .colourblind.discrete(length(.data)) +
-        scale_y_continuous(expand = c(0,0))
-      return(p)
-    } else {
-      p <- do.call(grid.arrange, 
-                   c(lapply(1:length(.data), function (i) {
-                     vis.J.usage(.data[[i]], .cast.freq, names(.data)[i], 0, .coord.flip, ...) 
-                   }), ncol = .ncol, main = .main) )
-      return(p)
-    }
-  }
-  
-  if (.cast.freq) { 
-    if (! '.alphabet' %in% names(list(...))) {
-      .data <- freq.segments(.data, 'TRBJ', ...)
-    } else {
-      .data <- freq.segments(.data, ...)
-    }
-  }
-  
-  if (names(.data)[1] == 'Segment') {
-    # If result from freq.segments functions.
-    p <- ggplot() + geom_bar(aes(x = Segment, y = Freq, fill = Freq), data = .data, stat = 'identity', colour = 'black')
-  }
-  else {
-    # If mitcr data.frame.
-    p <- ggplot() + geom_histogram(aes(x = J.segments, fill = ..count..), data = .data, colour = 'black')
-  }
-  if (.coord.flip) { p <- p + coord_flip() }
-  p + theme_linedraw() + 
-    theme(axis.text.x = element_text(angle=90)) + 
-    ggtitle(.main) + 
-    .colourblind.gradient() +
-    scale_y_continuous(expand = c(.02,0))
 }
 
 
@@ -396,15 +348,15 @@ vis.J.usage <- function (.data, .cast.freq = T, .main = 'J-usage', .ncol = 3, .c
 vis.pca <- function (.data, .groups = NA) {
   if (has.class(.data, 'data.frame')) {
     dnames <- row.names(.data)
-    .data <- data.frame(First = .data[,1], Second = .data[,2], Subject = row.names(.data),
+    .data <- data.frame(First = .data[,1], Second = .data[,2], Sample = row.names(.data),
                         Group = rep('group0', times = length(.data[,2])), stringsAsFactors=F)
   } else {
     dnames <- row.names(.data$x)
-    .data <- data.frame(First = .data$x[,1], Second = .data$x[,2], Subject = row.names(.data$x),
+    .data <- data.frame(First = .data$x[,1], Second = .data$x[,2], Sample = row.names(.data$x),
                         Group = rep('group0', times = length(.data$x[,2])), stringsAsFactors=F)
   }
   
-  if (is.na(.groups)) { 
+  if (is.na(.groups[1])) { 
     .groups <- lapply(1:nrow(.data), function (i) i)
     names(.groups) <- dnames
   }
@@ -416,7 +368,7 @@ vis.pca <- function (.data, .groups = NA) {
   
   ggplot() + 
     geom_point(aes(x = First, y = Second, colour = Group), data = .data) + 
-    geom_text(aes(x = First, y = Second, label = Subject), data = .data, hjust=0, vjust=0) +
+    geom_text(aes(x = First, y = Second, label = Sample), data = .data, hjust=0, vjust=0) +
     theme_linedraw() +
     .colourblind.discrete(length(.groups), T)
 }
@@ -431,7 +383,7 @@ vis.pca <- function (.data, .groups = NA) {
 #' @param .ncol Number of columns in the grid.
 #' @param .expand Interger vector of length 2, for \code{scale_y_continous(expand = .expand)} function.
 #' 
-#' @seealso \code{intersect} \code{js.div}
+#' @seealso \link{repOverlap}, \link{js.div}
 #' 
 #' @examples
 #' \dontrun{
@@ -452,7 +404,7 @@ vis.radarlike <- function (.data, .ncol = 3, .expand = c(.25, 0)) {
       coord_polar() + 
       ggtitle(names(.data)[l]) +
       scale_y_continuous(expand = .expand) + 
-      guides(fill = guide_legend(title="Subject")) +
+      guides(fill = guide_legend(title="Sample")) +
       theme_linedraw() + xlab('') + ylab('')
     })
   for (i in 1:length(data.names)) {
@@ -480,7 +432,7 @@ vis.radarlike <- function (.data, .ncol = 3, .expand = c(.25, 0)) {
 #' }
 vis.top.proportions <- function (.data, .head = c(10, 100, 1000, 10000, 30000, 100000, 300000, 1000000), .col = "Read.count") {
   if (has.class(.data, 'data.frame')) {
-    .data <- list(Data = .data)
+    .data <- list(Sample = .data)
   }
   
   res <- sapply(.head, function (h) top.proportion(.data, h, .col))
@@ -502,7 +454,7 @@ vis.top.proportions <- function (.data, .head = c(10, 100, 1000, 10000, 30000, 1
     theme_linedraw()  + 
     theme(axis.text.x  = element_text(angle=90)) +
     ylab("Clonal proportion") + 
-    xlab("Subject") + 
+    xlab("Sample") + 
     ggtitle("Summary proportion of the top N clones")  + 
     guides(fill = guide_legend("Top N clones")) + .colourblind.discrete(length(.head))
 #     scale_y_continuous(expand = c(0, 0))
@@ -517,7 +469,7 @@ vis.top.proportions <- function (.data, .head = c(10, 100, 1000, 10000, 30000, 1
 #' @param .muc.res Output from the \code{muc} function.
 #' @param .groups List with names for groups and names of the group members. If NULL than each
 #' member is in the individual group.
-#' @param .log If T than log-scale the y axis.
+#' @param .log if T then log-scale the y axis.
 #' 
 #' @seealso \link{rarefaction}
 #' 
@@ -612,7 +564,7 @@ vis.kmer.histogram <- function (.kmers, .head = 100, .position = c('stack', 'dod
 #' for each time point for each clone.
 #' @param .lower Similar to .changed but values are lower bound for clonal count / frequency.
 #' @param .upper Similar to .changed but values are upper bound for clonal count / frequency.
-#' @param .log If T than log-scale y-axis.
+#' @param .log if T then log-scale y-axis.
 #' 
 #' @return ggplot object.
 vis.clonal.dynamics <- function (.changed, .lower, .upper, .log = T) {
@@ -632,13 +584,13 @@ vis.clonal.dynamics <- function (.changed, .lower, .upper, .log = T) {
 }
 
 
-#' Visualise occupied by clones homeostatic space among subjects or groups.
+#' Visualise occupied by clones homeostatic space among Samples or groups.
 #' 
 #' @description
 #' Visualise which clones how much space occupy.
 #' 
 #' @param .clonal.space.data Data from the \code{fclonal.space.homeostasis} function.
-#' @param .groups List of named character vector with names of subjects 
+#' @param .groups List of named character vector with names of Samples 
 #' in \code{.clonal.space.data} for grouping them together.
 #' 
 #' @seealso \link{clonal.space.homeostasis}
@@ -646,15 +598,15 @@ vis.clonal.dynamics <- function (.changed, .lower, .upper, .log = T) {
 #' @return ggplot object.
 vis.clonal.space <- function (.clonal.space.data, .groups = NULL) {
   melted <- melt(.clonal.space.data)
-  colnames(melted) <- c('Subject', 'Clone.size', 'Proportion')
-  melted$Subject <- as.character(melted$Subject)
+  colnames(melted) <- c('Sample', 'Clone.size', 'Proportion')
+  melted$Sample <- as.character(melted$Sample)
   melted$Proportion <- as.numeric(as.character(melted$Proportion))
-  melted$Group <- melted$Subject
+  melted$Group <- melted$Sample
   
   if (!is.null(.groups)) { 
     for (i in 1:length(.groups)) {
       for (j in 1:length(.groups[[i]])) {
-        melted$Group[melted$Subject == .groups[[i]][j] ] <- names(.groups)[i]
+        melted$Group[melted$Sample == .groups[[i]][j] ] <- names(.groups)[i]
       }
     }
     
@@ -666,11 +618,11 @@ vis.clonal.space <- function (.clonal.space.data, .groups = NULL) {
     p <- ggplot() +
       geom_bar(aes(x = Group, y = Mean, fill = Clone.size), data = melted, colour = 'black', stat = 'identity') +
       geom_errorbar(aes(x = Group, ymin = Q1, ymax = Q2), data = melted, colour = 'black') +
-      xlab("Subject")
+      xlab("Sample")
   } else {
     p <- ggplot() +
       geom_bar(aes(x = Group, y = Proportion, fill = Clone.size), data = melted, colour = 'black', stat = 'identity', position = 'stack') +
-      xlab("Subject")
+      xlab("Sample")
       
   }
     
@@ -688,7 +640,7 @@ vis.clonal.space <- function (.clonal.space.data, .groups = NULL) {
 #' Plot logo-like graphs for visualising of nucleotide or amino acid motif sequences / profiles.
 #' 
 #' @param .data Output from the \code{kmer.profile} function.
-#' @param .replace.zero.with.na If T than replace all zeros with NAs, therefore letters with
+#' @param .replace.zero.with.na if T then replace all zeros with NAs, therefore letters with
 #' zero frequency wont appear at the plot.
 #' @param .jitter.width,.jitter.height,.dodge.width Parameters to \code{position_jitterdodge}
 #' for aligning text labels of letters.

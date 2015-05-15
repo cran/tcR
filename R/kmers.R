@@ -11,9 +11,9 @@
 #' @param .data Either character vector or a data.frame.
 #' @param .head Parameter for head function applied to the given data before kmer generation.
 #' @param .k Size of the kmer.
-#' @param .clean If T than remove sequences which contain '~' or '*' symbols. Useful for deleting out-of-frame aminoacid sequnces.
+#' @param .clean if T then remove sequences which contain '~' or '*' symbols. Useful for deleting out-of-frame aminoacid sequnces.
 #' @param .meat if TRUE than .data must be data.frame with columns CDR3.amino.acid.sequence and Read.count.
-#' @param .verbose If T than print progress.
+#' @param .verbose if T then print progress.
 #' @param .left.shift Cut all \code{.left.shift} symbols from the left side for each sequence.
 #' @param .right.shift Cut all \code{.right.shift} symbols from the right side for each sequence.
 #' 
@@ -251,7 +251,7 @@ generate.kmers.prob <- function (.k, .probs, .count = 1, .alphabet = c('A', 'C',
 #' @param .data Either list with elements of one of the allowed classes or object with one of the class:
 #' data.frame with first column with character sequences and second column with number of sequences or character vector.
 #' @param .names Names for each sequence / row in the \code{.data}.
-#' @param .verbose If T than print processing output.
+#' @param .verbose if T then print processing output.
 #' 
 #' @return Return data frame with first column "Symbol" with all possible symbols in the given sequences
 #' and other columns with names "1", "2", ... for each position with percentage for each symbol.
@@ -309,16 +309,12 @@ kmer.profile <- function (.data, .names = rep('Noname', times=length(.data)), .v
 #' Perform the Gibbs Sampler method for finding frequent motifs in the given vector of strings or data.frame.
 #' Each string splitted to kmers with the given length of motif.
 #' 
-#' @usage
-#' gibbs.sampler(.data, .k = 5, .niter = 500, .meat = T)
-#' 
 #' @param .data Vector of characters or data.frame of characters (1st col) and their numbers (2nd col) if .meat == T.
 #' @param .k Motif's length.
 #' @param .niter Number of iterations.
-#' @param .meat Should function use the count of every sequence or not.
 #' 
 #' @return Vector of possible motifs.
-gibbs.sampler <- function (.data, .k = 5, .niter = 500, .meat = T) {
+gibbs.sampler <- function (.data, .k = 5, .niter = 500) {
   .n <- .k
   
   .get.best.motif <- function (.seq, .profile) {
@@ -350,7 +346,7 @@ gibbs.sampler <- function (.data, .k = 5, .niter = 500, .meat = T) {
   }
   
   .score <- function (.kmers) {
-    sc <- rep.int(0, 5)
+    sc <- rep.int(0, .n)
     for (i in 1:.n) {
       tab <- table(substr(.kmers, i, i))
       sc[i] <- sum(tab) - max(tab)
