@@ -5,9 +5,9 @@
 \alias{pca.segments.2D}
 \title{Perform PCA on segments frequency data.}
 \usage{
-pca.segments(.data, .cast.freq.seg = T, ..., .do.plot = T)
+pca.segments(.data, .cast.freq.seg = T, ..., .text = T, .do.plot = T)
 
-pca.segments.2D(.data, .cast.freq.seg = T, ..., .do.plot = T)
+pca.segments.2D(.data, .cast.freq.seg = T, ..., .text = T, .do.plot = T)
 }
 \arguments{
 \item{.data}{Either data.frame or a list of data.frame or a result obtained from the \code{geneUsage} function.}
@@ -15,6 +15,8 @@ pca.segments.2D(.data, .cast.freq.seg = T, ..., .do.plot = T)
 \item{.cast.freq.seg}{if T then apply code{geneUsage} to the supplied data.}
 
 \item{...}{Further arguments passed to \code{prcomp} or \code{geneUsage}.}
+
+\item{.text}{If T then plot sample names in the resulting plot.}
 
 \item{.do.plot}{if T then plot a graphic, else return a pca object.}
 }

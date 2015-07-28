@@ -1,6 +1,21 @@
 ########## Support functions for managing the data ##########
 
 
+#' Fix alleles - remove allele informatio from columns with genes.
+#' 
+#' @param .data Either tcR data frame or a list with tcR data frames.
+fix.alleles <- function (.data) {
+  if (has.class(.data, "list")) {
+    lapply(.data, fix.alleles)
+  }
+  
+  .data$V.gene <- gsub("[*][[:digit:]]*", "", .data$V.gene)
+  .data$D.gene <- gsub("[*][[:digit:]]*", "", .data$D.gene)
+  .data$J.gene <- gsub("[*][[:digit:]]*", "", .data$J.gene)
+  .data
+}
+
+
 #' Print the given message if second parameter is a TRUE.
 #' 
 #' @param .message Character vector standing for a message.
@@ -321,6 +336,9 @@ check.distribution <- function (.data, .do.norm = NA, .laplace = 1, .na.val = 0,
   
   if (.warn.sum && sum(.data) != 1) {
     cat("Warning! Sum of the input vector is NOT equal to 1. Function may produce incorrect results.\nTo fix this try to set .do.norm = TRUE in the function's parameters.\n")
+    if (abs(sum(.data) - 1) < 1e-14) {
+      cat("Note: difference between the sum of the input vector and 1 is ", (sum(.data) - 1), ", which may be caused by internal R subroutines and may not affect the result at all.\n")
+    }
   }
   
   .data
@@ -403,5 +421,5 @@ slice.fun <- function(.data, .size, .n, .fun, ..., .simplify = T) {
 #' with similar legends.
 .add.legend <- function (.vis.list, .vis.nrow = 2, .legend.ncol = 1) {
   leg <- gtable_filter(ggplot_gtable(ggplot_build(.vis.list[[1]] + guides(fill=guide_legend(ncol=.legend.ncol)))), "guide-box")
-  grid.arrange(do.call(arrangeGrob, c(.vis.list, nrow = .vis.nrow)), leg, widths=unit.c(unit(1, "npc") - leg$width, leg$width), nrow = 1, main ='Top crosses')
+  grid.arrange(do.call(arrangeGrob, c(.vis.list, nrow = .vis.nrow)), leg, widths=unit.c(unit(1, "npc") - leg$width, leg$width), nrow = 1, top ='Top crosses')
 }

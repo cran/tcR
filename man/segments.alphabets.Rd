@@ -13,6 +13,8 @@
 \alias{HUMAN_TRDV}
 \alias{HUMAN_TRGJ}
 \alias{HUMAN_TRGV}
+\alias{MOUSE_TRBJ}
+\alias{MOUSE_TRBV}
 \alias{genealphabets}
 \alias{segments.alphabets}
 \title{Alphabets of TCR and Ig gene segments.}
@@ -41,6 +43,10 @@ HUMAN_TRDV
 HUMAN_TRDD
 
 HUMAN_TRDJ
+
+MOUSE_TRBV
+
+MOUSE_TRBJ
 }
 \description{
 Character vector with names for segments. With \code{tcR} we provided alphabets for all alpha, beta,
