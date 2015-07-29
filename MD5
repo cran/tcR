@@ -1,4 +1,4 @@
-db7b2cb3f5a5dadb5a160430b589e884 *DESCRIPTION
+8b9a96d13e981345d9022639b4edd59c *DESCRIPTION
 9628ad9ed64603f7ed017ba186bd6176 *NAMESPACE
 e96382dfc876ba6af180a79ed52adbda *NEWS
 a492484c01e95e6d4723ad31b10e671f *R/RcppExports.R
@@ -10,7 +10,7 @@ c3e20272dfb6afa22f5b0730581ac2b3 *R/dataproc.R
 a186e0ffef28efdc7076680391c58c2d *R/filters.R
 18d7cf76bf4e751aefadf8a6f64e3347 *R/graph.R
 94a54605f8dbf8536c5a601622e876c3 *R/infoanalysis.R
-4a88f8488bba8729aa1a9807fd14eb24 *R/input.R
+e4dc5693adee067e4cfa939fe431b449 *R/input.R
 9f8d30d8e0cade55c27ab0dda451755a *R/kmers.R
 ef81c66aa4f2c28c94dd9b4dd0b0bb7c *R/measures.R
 f29f5cddfe3ab5afebd426d69233010f *R/mitcr.R
@@ -22,7 +22,7 @@ ce67446ecea64be9cb65982f94d5c69a *R/plots.R
 d7cd7678241525666852f7f92a2c03c2 *R/spectrum.R
 991c25e078ad053b7860dcd3a91a1697 *R/stats.R
 eff90f75acf7f2a06b720cce2abb0840 *R/strtools.R
-8672a5aeeb0d5026d19d044b5cc5b32f *README.md
+c2caff95e6f02399c43ac4550ca928c8 *README.md
 93e0c1cee03d5bb7add82b8101c81305 *build/vignette.rds
 89d6d3f555bed92c5ed36af98b04c7a4 *data/beta.prob.rda
 0b472b1afd448af9612974a7033a82bb *data/datalist
@@ -33,7 +33,7 @@ a210524a6d7f8f05e66f1ec59416ddc7 *data/twa.rda
 8dd437aa67de610b66bd177f3aa5ea6b *inst/crossanalysis.report.Rmd
 b3e30dfc5fa127c08986ec4efbf74f9b *inst/doc/tcrvignette.R
 6efbf60e3b82c3c74bae216ac43057de *inst/doc/tcrvignette.Rmd
-2ef25432d73235d0dca57d76f6038fb6 *inst/doc/tcrvignette.html
+ad12500fe7b1e488ea40a9774f45253f *inst/doc/tcrvignette.html
 0d8030aaef0685c2f34fc53cce1adfac *inst/library.report.Rmd
 32483ea4e5953ef574de5146f416f260 *man/AA_TABLE.Rd
 3ad08b613dfb52056f1f70af21351209 *man/apply.symm.Rd
