@@ -438,6 +438,19 @@ repOverlap(twb, 'morisita', 'aa', 'read.count', .vgene = T, .verbose = F)
 ```
 
 
+### Overlap statistics and tests
+
+
+#### Overlap Z-score (OZ-score) - a measure for ???abnormality??? in overlaps
+
+`ozScore`
+
+#### Monte Carlo permutation test for pairwise and one-vs-all-wise within- and inter-group differences in a set of repertoires
+
+`permutDistTest`
+
+`pca2euclid`
+
 ### Shared repertoire
 To investigate a shared among a several repertoires clonotypes ("shared repertoire") the package provided the `shared.repertoire` function along with functions for computing the shared repertoire statistics. The `shared.representation` function computes the number of shared clonotypes for each repertoire for each degree of sharing (i.e., number of people, in which indicated amount of clones have been found). The function `shared.summary` is equivalent to `repOverlap(, 'exact')` but applies to the shared repertoire data frame. Measuring distances among repertoires using the cosine similarity on vector of counts of shared sequences is also possible with the `cosine.sharing` function.
 

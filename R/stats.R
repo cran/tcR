@@ -30,7 +30,7 @@
 #' 
 #' @return Filtered data.frame or a list with such data.frames.
 get.inframes <- function (.data, .head = 0, .coding = T) { 
-  if (class(.data) == 'list') { return(lapply(.data, get.inframes, .head = .head)) }
+  if (class(.data) == 'list') { return(lapply(.data, get.inframes, .head = .head, .coding = .coding)) }
   .data <- head(.data, if (.head == 0) {nrow(.data)} else {.head})
   if (.coding) {
     d <- subset(.data, nchar(.data$CDR3.nucleotide.sequence) %% 3 == 0)
@@ -48,7 +48,7 @@ get.outframes <- function (.data, .head = 0) {
 
 count.inframes <- function (.data, .head = 0, .coding = T) {
   if (class(.data) == 'list') { sapply(get.inframes(.data, .head, .coding), nrow) }
-  else { nrow(get.inframes(.data, .head)) }
+  else { nrow(get.inframes(.data, .head, .coding)) }
 }
 
 count.outframes <- function (.data, .head = 0) {

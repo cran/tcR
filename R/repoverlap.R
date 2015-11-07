@@ -44,6 +44,8 @@
 #' data(twb)
 #' repOverlap(twb, "exact", .seq = "nuc", .vgene = F)
 #' repOverlap(twb, "morisita", .seq = "aa", .vgene = T, .quant = "umi.count")
+#' ov <- repOverlap(twb)
+#' vis.pca(prcomp(ov, scale. = T), list(A = c(1, 2), B = c(3, 4)))
 #' }
 repOverlap <- function (.data,
                         .method = c("exact", "hamm", "lev", "jaccard", "morisita", "tversky", "overlap", "horn"), 
@@ -103,14 +105,18 @@ repOverlap <- function (.data,
       .fun <- function (x, y) { morisitas.index(x, y, F) }
     }
     
+    cat("Preprocessing data...\t")
     new.data <- .merge.with.v(.data, .seqcol, .vgene)
     new.reads <- lapply(.data, "[[", quant)
     
     if (.do.unique) {
+      pb <- set.pb(length(.data))
       for (i in 1:length(.data)) {
         .data[[i]] <- as.data.frame(summarise(grouped_df(data.frame(Sequence = new.data[[i]], Count = new.reads[[i]], stringsAsFactors = F),
                                            list(as.name("Sequence"))), Count = sum(Count)), stringsAsFactors = F)
+        add.pb(pb)
       }
+      close(pb)
     }
     
     .pair.fun(.data,

@@ -1,6 +1,6 @@
-[![Licence](https://img.shields.io/hexpm/l/plug.svg)](http://www.apache.org/licenses/LICENSE-2.0)
+[![Licence](https://img.shields.io/hexpm/l/plug.svg?style=flat-square)](http://www.apache.org/licenses/LICENSE-2.0)
 [![RepSeq](http://statsarray.com/wp-content/uploads/2014/03/omictools-logo.png)](http://omictools.com/tcr-s9043.html)
-[![Join the chat at https://gitter.im/imminfo/tcr](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/imminfo/tcr?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![CRAN](http://www.r-pkg.org/badges/version/tcR?style=flat-square)](http://cran.r-project.org/web/packages/tcR)
 
 tcR
 ===
@@ -16,7 +16,7 @@ If you have any questions, suggestions or bug reports, feel free to raise an iss
 *Warning!*
 tcR internally expects columns with nucleotide and amino acid CDR3 sequences and columns with gene segments to have character class, not factor class. Use `stringsAsFactors=FALSE` parameter if you use R functions for parsing files with tables (.csv, .xls and others).
 
-*Note for installation on Macs with OSX Yosemite (and potentially other versions):  if you receive a compilation error, modify tcR/src/Makevars to:*
+*Note for installation on Macs with OSX Yosemite (and potentially other versions):  if you receive a compilation error, modify tcR/src/Makvars to:*
 
 ```
 CXX=clang++

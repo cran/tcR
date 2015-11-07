@@ -1,17 +1,40 @@
 ########## Support functions for managing the data ##########
 
 
-#' Fix alleles - remove allele informatio from columns with genes.
+#' Fix alleles / genes by removing allele information / unnecessary colons. 
 #' 
-#' @param .data Either tcR data frame or a list with tcR data frames.
+#' @aliases fix.alleles fix.genes
+#' 
+#' @description
+#' Fix alleles / genes by removing allele information / unnecessary colons. 
+#' 
+#' @param .data tcR data frame.
 fix.alleles <- function (.data) {
   if (has.class(.data, "list")) {
-    lapply(.data, fix.alleles)
+    return(lapply(.data, fix.alleles))
   }
   
   .data$V.gene <- gsub("[*][[:digit:]]*", "", .data$V.gene)
   .data$D.gene <- gsub("[*][[:digit:]]*", "", .data$D.gene)
   .data$J.gene <- gsub("[*][[:digit:]]*", "", .data$J.gene)
+  .data
+}
+
+fix.genes <- function (.data) {
+  if (has.class(.data, "list")) {
+    return(lapply(.data, fix.genes))
+  }
+  
+  .fix <- function (.col) {
+    # it's not a mistake
+    .col <- gsub(", ", ",", .col, fixed = T, useBytes = T)
+    .col <- gsub(",", ", ", .col, fixed = T, useBytes = T)
+    .col
+  }
+  
+  .data$V.gene <- .fix(.data$V.gene)
+  .data$D.gene <- .fix(.data$D.gene)
+  .data$J.gene <- .fix(.data$J.gene)
   .data
 }
 
@@ -422,4 +445,92 @@ slice.fun <- function(.data, .size, .n, .fun, ..., .simplify = T) {
 .add.legend <- function (.vis.list, .vis.nrow = 2, .legend.ncol = 1) {
   leg <- gtable_filter(ggplot_gtable(ggplot_build(.vis.list[[1]] + guides(fill=guide_legend(ncol=.legend.ncol)))), "guide-box")
   grid.arrange(do.call(arrangeGrob, c(.vis.list, nrow = .vis.nrow)), leg, widths=unit.c(unit(1, "npc") - leg$width, leg$width), nrow = 1, top ='Top crosses')
+}
+
+
+#' Get all values from the matrix corresponding to specific groups.
+#' 
+#' @description 
+#' Split all matrix values to groups and return them as a data frame with two columns: for values and for group names.
+#' 
+#' @param .mat Input matrix with row and columns names.
+#' @param .groups Named list with character vectors for names of elements for each group.
+#' @param .symm If T than remove symmetrical values from the input matrix.
+#' @param .diag If .symm if T and .diag is F than remove diagonal values.
+#' 
+#' @seealso \link{repOverlap}, \link{vis.group.boxplot}
+#' 
+#' @examples 
+#' \dontrun{
+#' data(twb)
+#' ov <- repOverlap(twb)
+#' sb <- matrixSubgroups(ov, list(tw1 = c('Subj.A', 'Subj.B'), tw2 = c('Subj.C', 'Subj.D')));
+#' vis.group.boxplot(sb)
+#' }
+matrixSubgroups <- function (.mat, .groups = NA, .symm = T, .diag = F) {
+  
+  .intergroup.name <- function (.gr1, .gr2) {
+    tmp <- sort(c(.gr1, .gr2))
+    paste0(tmp[1], ':', tmp[2])
+  }
+  
+  if (.symm) {
+    .mat[lower.tri(.mat, !.diag)] <- NA
+  }
+  
+  data <- melt(.mat, na.rm = T)
+  names(data) <- c("Rep1", "Rep2", "Value")
+  data$Group <- 'no-group'
+  if (!is.na(.groups[1])) {
+    for (i in 1:length(.groups)) {
+      for (j in 1:length(.groups)) {
+        gr1 <- .groups[[i]]
+        gr2 <- .groups[[j]]
+        gr1.name <- names(.groups)[i]
+        gr2.name <- names(.groups)[j]
+        if (gr1.name == gr2.name) {
+          data$Group[data$Rep1 %in% gr1 & data$Rep2 %in% gr2] <-
+            gr1.name
+        } else {
+          if (!(.intergroup.name(gr2.name, gr1.name) %in% data$Group)) {
+            data$Group[data$Rep1 %in% gr1 & data$Rep2 %in% gr2] <-
+              .intergroup.name(gr1.name, gr2.name)
+            data$Group[data$Rep2 %in% gr1 & data$Rep1 %in% gr2] <-
+              .intergroup.name(gr1.name, gr2.name)
+          }
+        }
+      }
+    }
+  }
+  
+  data[, c('Group', 'Value')]
+}
+
+
+#' Compute the Euclidean distance among principal components.
+#' 
+#' @description 
+#' Compute the Euclidean distance among principal components.
+#' 
+#' @param .pcaobj An object returned by \code{prcomp}.
+#' @param .num.comps On how many principal components compute the distance.
+#' 
+#' @return Matrix of distances.
+#' 
+#' @seealso \link{prcomp}, \link{pca.segments}, \link{repOverlap}, \link{permutDistTest}
+#' 
+#' @examples
+#' \dontrun{
+#' mat.ov <- repOverlap(AS_DATA, .norm = T)
+#' mat.gen.pca <- pca.segments(AS_DATA, T, .genes = HUMAN_TRBV)
+#' mat.ov.pca <- prcomp(mat.ov, scale. = T)
+#' mat.gen.pca.dist <- pca2euclid(mat.gen.pca)
+#' mat.ov.pca.dist <- pca2euclid(mat.ov.pca)
+#' permutDistTest(mat.gen.pca.dist, list(<list of groups here>))
+#' permutDistTest(mat.ov.pca.dist, list(<list of groups here>))
+#' }
+pca2euclid <- function (.pcaobj, .num.comps = 2) {
+  mat <- .pcaobj$x
+  if (.num.comps > 0) { mat <- mat[,1:.num.comps] }
+  as.matrix(dist(mat))
 }

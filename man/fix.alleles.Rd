@@ -2,14 +2,15 @@
 % Please edit documentation in R/datatools.R
 \name{fix.alleles}
 \alias{fix.alleles}
-\title{Fix alleles - remove allele informatio from columns with genes.}
+\alias{fix.genes}
+\title{Fix alleles / genes by removing allele information / unnecessary colons.}
 \usage{
 fix.alleles(.data)
 }
 \arguments{
-\item{.data}{Either tcR data frame or a list with tcR data frames.}
+\item{.data}{tcR data frame.}
 }
 \description{
-Fix alleles - remove allele informatio from columns with genes.
+Fix alleles / genes by removing allele information / unnecessary colons.
 }
 
