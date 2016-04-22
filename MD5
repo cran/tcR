@@ -1,4 +1,4 @@
-a3c0e8148c39075a261996c72a921a15 *DESCRIPTION
+53326f9ca3e9f9b3f684b866d29687df *DESCRIPTION
 0626e3dbe5deaae710074ee0081f119e *NAMESPACE
 e96382dfc876ba6af180a79ed52adbda *NEWS
 a492484c01e95e6d4723ad31b10e671f *R/RcppExports.R
@@ -6,16 +6,16 @@ a492484c01e95e6d4723ad31b10e671f *R/RcppExports.R
 5f1df84921db02dccd94917405e6be9e *R/dataproc.R
 f977e8bb7702a8e3025487058ec3fd4c *R/datatools.R
 4c6553528b5c7e77ec46271046893c8d *R/diversity.R
-09e97d180f8aac8235bad9f587bbb417 *R/docdata.R
+0988123ae30afe8c10aeda24fbe53a78 *R/docdata.R
 a186e0ffef28efdc7076680391c58c2d *R/filters.R
 18d7cf76bf4e751aefadf8a6f64e3347 *R/graph.R
 18d779083054a272f663d525dad32d09 *R/infoanalysis.R
-e0c620a471f9afa8ab46e7284087e3a6 *R/io.R
+b5681159c5404b92e7a8147952691346 *R/io.R
 9f8d30d8e0cade55c27ab0dda451755a *R/kmers.R
 ef81c66aa4f2c28c94dd9b4dd0b0bb7c *R/measures.R
 f29f5cddfe3ab5afebd426d69233010f *R/mitcr.R
-1099f3e786d5313ed07176aa73bbff5d *R/parsing.R
-d5042d944efa9b3c14f18c015e819e4c *R/plots.R
+85ada0928b9de9897242a4a7df383f72 *R/parsing.R
+53f862acf927555fa9dcaa3348f0f63a *R/plots.R
 4bb2940356c4b42dce7771978f8fc794 *R/repdiversity.R
 0d3a9787270d1ff3df620986c03c8dbb *R/repoverlap.R
 be7a2080ed6c7f3de0554ea39bda19e3 *R/segments.R
@@ -23,8 +23,8 @@ be7a2080ed6c7f3de0554ea39bda19e3 *R/segments.R
 d7cd7678241525666852f7f92a2c03c2 *R/spectrum.R
 385c4c5a70bb2b36eb2df94e89bd02c2 *R/stats.R
 3257c9831e8d13fbe1d9773f3bddd5ed *R/strtools.R
-19045b0831f2eb708556ffaf09c294ac *README.md
-404c4bbb5d8ed6a0ec81676172c20969 *build/vignette.rds
+0584f52bc549ed90a4ad6b78302ddb7f *README.md
+36c2f2ddd7fa0b463a75abb20ab93c5c *build/vignette.rds
 89d6d3f555bed92c5ed36af98b04c7a4 *data/beta.prob.rda
 0b472b1afd448af9612974a7033a82bb *data/datalist
 3e5199fd3d3acb248adfe09b59f39bfd *data/genesegments.rda
@@ -34,7 +34,7 @@ d813629cc80fb283b5d34dd61d37d52a *data/twa.rda
 8dd437aa67de610b66bd177f3aa5ea6b *inst/crossanalysis.report.Rmd
 b3e30dfc5fa127c08986ec4efbf74f9b *inst/doc/tcrvignette.R
 35c614d79a8a7fd702590da7fb752fba *inst/doc/tcrvignette.Rmd
-ccc2580595e9b254e20b53b2e14d1cac *inst/doc/tcrvignette.html
+6304d7106493e89b8e9c40495564ae40 *inst/doc/tcrvignette.html
 0d8030aaef0685c2f34fc53cce1adfac *inst/library.report.Rmd
 012ed5593daacdcd716f4bbdc3c1374e *man/AA_TABLE.Rd
 01110de7ad261da0385e7479db911751 *man/apply.symm.Rd
@@ -78,7 +78,7 @@ cfe241457c3166000ec7a0e4c2a4607d *man/matrixdiagcopy.Rd
 bc880a9dcf8c962f4e34517f28c5843c *man/mutation.network.Rd
 a2a684980e44ae3fa9cd4c412aad1f98 *man/ozScore.Rd
 0e1df499bbde1bd52e4acc27e79d35e3 *man/parse.cloneset.Rd
-6f883df852469a739400b8c22568dada *man/parse.folder.Rd
+0bf9a80509bdc51bb494620412ef24e5 *man/parse.folder.Rd
 09aab9e0b44023cb6e0b9b8c456b6f42 *man/pca.segments.Rd
 37be4fe8387ef7bbe503ecd8d7e3c226 *man/pca2euclid.Rd
 557bd9372605a8bc42cb8eae7c9f7d0b *man/permutDistTest.Rd
@@ -93,7 +93,7 @@ d7beac6f2a5e89e56b0bf50adba756b4 *man/permutedf.Rd
 c58b65e7cb1f33fa1846997315739edf *man/reverse.string.Rd
 068fc97db3076fabfbd0e265163084fc *man/sample.clones.Rd
 b801078a00c9a2c37de83f63dea7187b *man/sample2D.Rd
-aadc67f1b44808907f0d650283c7ee1e *man/segments.alphabets.Rd
+332d9ae0ba81b36e26b5cd02752dc91b *man/segments.alphabets.Rd
 bf5f7606c977120a9b23f3038fb4a416 *man/segments.list.Rd
 244fb3b612dc921b6808d7f68531e553 *man/set.group.vector.Rd
 e29d46180a426bbff08ea79665e03096 *man/set.pb.Rd
@@ -111,7 +111,7 @@ efd6e1eef5532f8d6fcf599d8d7ec30e *man/vis.clonal.space.Rd
 e9a0b8a4257e08fd1ff2ae422af558b3 *man/vis.count.len.Rd
 78f876ef59e3c619168d20b0f5fb1aeb *man/vis.gene.usage.Rd
 05d936735989faba19c0ee1ab1cef4f4 *man/vis.group.boxplot.Rd
-75e280d80c1c114e89b10a5275c96d87 *man/vis.heatmap.Rd
+f236741ce08c4b0484239ac656e91da8 *man/vis.heatmap.Rd
 a27ce7a51ec77821a9f4a5e2885af8fe *man/vis.kmer.histogram.Rd
 44e281b2202c378716872718edf83e2e *man/vis.logo.Rd
 7a480ed6dfc9f843e4527d04a4dc7662 *man/vis.number.count.Rd

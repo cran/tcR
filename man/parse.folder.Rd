@@ -9,6 +9,7 @@
 \alias{parse.immunoseq3}
 \alias{parse.imseq}
 \alias{parse.migec}
+\alias{parse.migmap}
 \alias{parse.mitcr}
 \alias{parse.mitcrbc}
 \alias{parse.mixcr}
@@ -47,6 +48,8 @@ parse.mixcr(.filename)
 parse.imseq(.filename)
 
 parse.tcr(.filename)
+
+parse.migmap(.filename)
 }
 \arguments{
 \item{.folderpath}{Path to the folder with text cloneset files.}
