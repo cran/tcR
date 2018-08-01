@@ -53,7 +53,7 @@ parse.cloneset <- function (.filename,
   
   .make.names <- function (.char) {
     if (is.na(.char[1])) { NA }
-    else { make.names(.char) }
+    else { tolower(make.names(.char)) }
   }
   
   .nuc.seq <- .make.names(.nuc.seq)
@@ -78,19 +78,21 @@ parse.cloneset <- function (.filename,
   if (length(grep("MiTCRFullExportV1.1", l, fixed = T))) { .skip <- 1 }
   
   # Check for different VDJtools outputs
-  if (length(strsplit(l, "-", T)[[1]]) == 3) {
-    if (strsplit(l, "-", T)[[1]][2] == "header") {
-      .reads <- "count"
-      .barcodes <- "count"
-      .skip <- 1
+  if (length(strsplit(l, "-", T)) > 0) {
+    if (length(strsplit(l, "-", T)[[1]]) == 3) {
+      if (strsplit(l, "-", T)[[1]][2] == "header") {
+        .reads <- "count"
+        .barcodes <- "count"
+        .skip <- 1
+      }
+    } else if (substr(l, 1, 1) == "#") {
+      .reads <- "X.count"
+      .barcodes <- "X.count"
     }
-  } else if (substr(l, 1, 1) == "#") {
-    .reads <- "X.count"
-    .barcodes <- "X.count"
   }
   close(f)
   
-  table.colnames <- make.names(read.table(gzfile(.filename), sep = .sep, skip = .skip, nrows = 1, stringsAsFactors = F, strip.white = T, comment.char = "", quote = "")[1,])
+  table.colnames <- tolower(make.names(read.table(gzfile(.filename), sep = .sep, skip = .skip, nrows = 1, stringsAsFactors = F, strip.white = T, comment.char = "", quote = "")[1,]))
   
   swlist <- list('character', 'character',
                  'integer', 'integer',
@@ -109,7 +111,7 @@ parse.cloneset <- function (.filename,
   }, USE.NAMES = F))
   
   suppressWarnings(df <- read.table(file = gzfile(.filename), header = T, colClasses = col.classes, sep = .sep, skip = .skip, strip.white = T, comment.char = "", quote = ""))
-
+  names(df) = tolower(names(df))
   df$Read.proportion <- df[, make.names(.reads)] / sum(df[, make.names(.reads)])
   .read.prop <- 'Read.proportion'
   
@@ -485,15 +487,15 @@ parse.migec <- function (.filename) {
 parse.vdjtools <- function (.filename) {
   filename <- .filename
   nuc.seq <- 'cdr3nt'
-  aa.seq <- 'cdr3aa'
+  aa.seq <- 'CDR3aa'
   reads <- 'count'
   barcodes <- 'count'
-  vgenes <- 'v'
-  jgenes <- 'j'
-  dgenes <- 'd'
-  vend <- 'VEnd'
-  jstart <- 'JStart'
-  dalignments <- c('DStart', 'DEnd')
+  vgenes <- 'V'
+  jgenes <- 'J'
+  dgenes <- 'D'
+  vend <- 'Vend'
+  jstart <- 'Jstart'
+  dalignments <- c('Dstart', 'Dend')
   vd.insertions <- "NO SUCH COLUMN AT ALL 1"
   dj.insertions <- "NO SUCH COLUMN AT ALL 2"
   total.insertions <- "NO SUCH COLUMN AT ALL 3"
@@ -879,10 +881,11 @@ parse.mixcr <- function (.filename) {
   
   df$V.end <- -1
   df$J.start <- -1
+  df[[.vend]] = gsub(";", "", df[[.vend]], fixed = T)
   logic = sapply(strsplit(df[[.vend]], "|", T, F, T), length) >= 5
-  df$V.end <- sapply(strsplit(df[[.vend]][logic], "|", T, F, T), "[[", 5)
+  df$V.end[logic] <- sapply(strsplit(df[[.vend]][logic], "|", T, F, T), "[[", 5)
   logic = sapply(strsplit(df[[.jstart]], "|", T, F, T), length) >= 4
-  df$J.start <- sapply(strsplit(df[[.jstart]][logic], "|", T, F, T), "[[", 4)
+  df$J.start[logic] <- sapply(strsplit(df[[.jstart]][logic], "|", T, F, T), "[[", 4)
   
   .vend <- "V.end"
   .jstart <- "J.start"

@@ -127,21 +127,27 @@ fix.genes <- function (.data) {
 #' twb1.gr <- group.clonotypes(twb[[1]])
 #' twb.gr <- group.clonotypes(twb)
 #' }
-group.clonotypes <- function (.data, .gene.col = 'V.gene', .count.col = 'Read.count',
-                              .prop.col = 'Read.proportion', .seq.col = 'CDR3.amino.acid.sequence') {
-  if (has.class(.data, 'list')) {
-    return(lapply(.data, group.clonotypes, .gene.col = .gene.col, .count.col = .count.col, .seq.col = .seq.col))
+group.clonotypes<-function (.data, .gene.col = "V.gene", .count.col = "Read.count", 
+                            .prop.col = "Read.proportion", .seq.col = "CDR3.amino.acid.sequence") 
+{
+  if (has.class(.data, "list")) {
+    return(lapply(.data, group.clonotypes, .gene.col = .gene.col, 
+                  .count.col = .count.col, .seq.col = .seq.col))
   }
   
   namesvec <- c(.seq.col)
   if (!is.na(.gene.col)) {
     namesvec <- c(namesvec, .gene.col)
   }
-  val <- dplyr::summarise_(dplyr::grouped_df(.data, lapply(namesvec, as.name)), value = paste0('sum(', .count.col, ')', sep = '', collapse = ''))$value
+  
+  val <- dplyr::summarise_(dplyr::grouped_df(.data, lapply(namesvec, as.name)), 
+                           value = paste0("sum(", .count.col, ")", sep = "", collapse = ""))$value
+  
   .data <- .data[!duplicated(.data[, namesvec]), ]
+  .data <- .data[order(.data$CDR3.amino.acid.sequence),] 
   .data[, .count.col] <- val
   .data[, .prop.col] <- val / sum(val)
-  .data
+  permutedf(.data)
 }
 
 
@@ -378,26 +384,26 @@ check.distribution <- function (.data, .do.norm = NA, .laplace = 1, .na.val = 0,
 
 #' Get samples from a repertoire slice-by-slice or top-by-top and apply function to them.
 #' 
-#' @aliases top.fun slice.fun
+#' @aliases top.fun slice_fun slice.fun
 #' 
 #' @description
 #' Functions for getting samples from data frames either by consequently applying
-#' head functions (\code{top.fun}) or by getting equal number of rows in the moving window (\code{slice.fun})
+#' head functions (\code{top.fun}) or by getting equal number of rows in the moving window (\code{slice_fun})
 #' and applying specified function to this samples.
 #' 
 #' @usage
 #' top.fun(.data, .n, .fun, ..., .simplify = T)
 #' 
-#' slice.fun(.data, .size, .n, .fun, ..., .simplify = T)
+#' slice_fun(.data, .size, .n, .fun, ..., .simplify = T)
 #' 
 #' @param .data Data.frame, matrix, vector or any enumerated type or a list of this types.
-#' @param .n Vector of values passed to head function for top.fun or the number of slices for slice.fun.
-#' @param .size Size of the slice for sampling for slice.fun.
+#' @param .n Vector of values passed to head function for top.fun or the number of slices for slice_fun.
+#' @param .size Size of the slice for sampling for slice_fun.
 #' @param .fun Funtions to apply to every sample subset. First input argument is a data.frame, others are passed as \code{...}.
 #' @param ... Additional parameters passed to the .fun.
 #' @param .simplify if T then try to simplify result to a vector or to a matrix if .data is a list.
 #' 
-#' @return List of length length(.n) for top.fun or .n for slice.fun.
+#' @return List of length length(.n) for top.fun or .n for slice_fun.
 #' 
 #' @examples
 #' \dontrun{
@@ -421,9 +427,9 @@ top.fun <- function (.data, .n, .fun, ..., .simplify = T) {
   res
 }
 
-slice.fun <- function(.data, .size, .n, .fun, ..., .simplify = T) {
+slice_fun <- function(.data, .size, .n, .fun, ..., .simplify = T) {
   if (has.class(.data, 'list')) {
-    res <- lapply(.data, function(d) { slice.fun(d, .size, .n, .fun, ..., .simplify = .simplify) })
+    res <- lapply(.data, function(d) { slice_fun(d, .size, .n, .fun, ..., .simplify = .simplify) })
     if (.simplify) {
       res <- as.matrix(data.frame(res))
     }
@@ -442,6 +448,8 @@ slice.fun <- function(.data, .size, .n, .fun, ..., .simplify = T) {
   if (.simplify) { res <- do.call(c, res) }
   res
 }
+
+slice.fun <- slice_fun
 
 
 #' Internal function. Add legend to a grid of plots and remove legend from all plots of a grid.
