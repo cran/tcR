@@ -3,7 +3,6 @@
 \name{top.fun}
 \alias{top.fun}
 \alias{slice_fun}
-\alias{slice.fun}
 \title{Get samples from a repertoire slice-by-slice or top-by-top and apply function to them.}
 \usage{
 top.fun(.data, .n, .fun, ..., .simplify = T)

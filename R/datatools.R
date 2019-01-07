@@ -51,7 +51,7 @@ fix.genes <- function (.data) {
 
 #' Choose the right column.
 #' 
-#' @param .x Character vector with column IDs.
+#' @param x Character vector with column IDs.
 #' @param .verbose If T then print the error mesasge.
 #' @return Character.
 .column.choice <- function (x, .verbose = T) {
@@ -384,7 +384,7 @@ check.distribution <- function (.data, .do.norm = NA, .laplace = 1, .na.val = 0,
 
 #' Get samples from a repertoire slice-by-slice or top-by-top and apply function to them.
 #' 
-#' @aliases top.fun slice_fun slice.fun
+#' @aliases top.fun slice_fun
 #' 
 #' @description
 #' Functions for getting samples from data frames either by consequently applying
@@ -449,8 +449,6 @@ slice_fun <- function(.data, .size, .n, .fun, ..., .simplify = T) {
   res
 }
 
-slice.fun <- slice_fun
-
 
 #' Internal function. Add legend to a grid of plots and remove legend from all plots of a grid.
 #' 
@@ -458,6 +456,10 @@ slice.fun <- slice_fun
 #' Given a list of ggplot2 plots, remove legend from each of them and return 
 #' grid of such plots plus legend from the first vis. Suitable for plots
 #' with similar legends.
+#' 
+#' @param .vis.list A list with ggplot2 plots.
+#' @param .vis.nrow Number of rows of the resulting grid with plots.
+#' @param .legend.ncol Number of columns in the shared legend.
 .add.legend <- function (.vis.list, .vis.nrow = 2, .legend.ncol = 1) {
   leg <- gtable_filter(ggplot_gtable(ggplot_build(.vis.list[[1]] + guides(fill=guide_legend(ncol=.legend.ncol)))), "guide-box")
   grid.arrange(do.call(arrangeGrob, c(.vis.list, nrow = .vis.nrow)), leg, widths=unit.c(unit(1, "npc") - leg$width, leg$width), nrow = 1, top ='Top crosses')
