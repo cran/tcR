@@ -1,4 +1,4 @@
-55e0e13a05edaeb103eb91c29902e51c *DESCRIPTION
+7bf6e197e7fbb19c285c1cb956427cf9 *DESCRIPTION
 67262988fde0cfff764df4ccf857c884 *NAMESPACE
 e96382dfc876ba6af180a79ed52adbda *NEWS
 d5ee0a88c2ecbc39128e4d3e789978c9 *R/RcppExports.R
@@ -14,7 +14,7 @@ b5681159c5404b92e7a8147952691346 *R/io.R
 59d4ebee4bc11f561168740429bf3597 *R/kmers.R
 ef81c66aa4f2c28c94dd9b4dd0b0bb7c *R/measures.R
 f29f5cddfe3ab5afebd426d69233010f *R/mitcr.R
-c08854821f7b0b223e4db194602d4055 *R/onload.R
+fb30623da0a11354e504df62defb8bbb *R/onload.R
 003ddf6d201f3e1cadd53bb71f8c3ca2 *R/parsing.R
 4342989bb5ea7e315739151672da1e26 *R/plots.R
 feb13c7a0cc1c669359c5130eeb37d9b *R/repdiversity.R
@@ -24,7 +24,7 @@ feb13c7a0cc1c669359c5130eeb37d9b *R/repdiversity.R
 0abf024069438d5e1acc615284782a44 *R/spectrum.R
 385c4c5a70bb2b36eb2df94e89bd02c2 *R/stats.R
 3257c9831e8d13fbe1d9773f3bddd5ed *R/strtools.R
-1ae86b9527ea4d2e9c6dc583de19d289 *README.md
+d1bb8c971b967c8735da603547b9e9ec *README.md
 90a53f30e4b9e9e7f045de8c2232de76 *build/vignette.rds
 89d6d3f555bed92c5ed36af98b04c7a4 *data/beta.prob.rda
 0b472b1afd448af9612974a7033a82bb *data/datalist
@@ -35,7 +35,7 @@ feb13c7a0cc1c669359c5130eeb37d9b *R/repdiversity.R
 32815f3b1b3683089c10c05523e2a13c *inst/crossanalysis.report.Rmd
 b3e30dfc5fa127c08986ec4efbf74f9b *inst/doc/tcrvignette.R
 eeab2cf8838689cf2aa096201ac32813 *inst/doc/tcrvignette.Rmd
-50c83339061221f15e97841df2981bd3 *inst/doc/tcrvignette.html
+d81331851f2083ad99958d25e1bbdc52 *inst/doc/tcrvignette.html
 0d8030aaef0685c2f34fc53cce1adfac *inst/library.report.Rmd
 4deaa0317a24a10bc6d8320f3377eb53 *man/AA_TABLE.Rd
 90a723ba4e3f02626c45b15f01575c79 *man/apply.symm.Rd
