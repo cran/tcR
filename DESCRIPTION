@@ -1,7 +1,7 @@
 Package: tcR
 Type: Package
 Title: Advanced Data Analysis of Immune Receptor Repertoires
-Version: 2.2.4
+Version: 2.2.4.1
 Date: 2019-03-25
 Author: Vadim Nazarov
 Maintainer: Vadim Nazarov <vdm.nazarov@gmail.com>
@@ -20,6 +20,6 @@ BugReports: https://github.com/imminfo/tcr/issues
 VignetteBuilder: knitr
 RoxygenNote: 6.1.1
 NeedsCompilation: yes
-Packaged: 2019-03-25 14:13:41 UTC; vdn
+Packaged: 2020-03-22 09:05:04 UTC; hornik
 Repository: CRAN
-Date/Publication: 2019-03-25 15:20:03 UTC
+Date/Publication: 2020-03-22 09:32:47 UTC

@@ -1,9 +1,9 @@
-## ----eval=TRUE,echo=FALSE,warning=FALSE,message=FALSE--------------------
+## ----eval=TRUE,echo=FALSE,warning=FALSE,message=FALSE-------------------------
 library(tcR)
 data(twa)
 data(twb)
 
-## ----eval=FALSE,echo=TRUE------------------------------------------------
+## ----eval=FALSE,echo=TRUE-----------------------------------------------------
 #  # Load the package and load the data.
 #  library(tcR)
 #  data(twa)  # "twa" - list of length 4
@@ -13,13 +13,13 @@ data(twb)
 #  head(twa[[1]])
 #  head(twb[[1]])
 
-## ----eval=FALSE,echo=TRUE------------------------------------------------
+## ----eval=FALSE,echo=TRUE-----------------------------------------------------
 #  # Run help to see available alphabets.
 #  ?genealphabets
 #  ?genesegments
 #  data(genesegments)
 
-## ----eval=FALSE,echo=TRUE------------------------------------------------
+## ----eval=FALSE,echo=TRUE-----------------------------------------------------
 #  # Parse file in "~/mitcr/immdata1.txt" as a MiTCR file.
 #  immdata1 <- parse.file("~/mitcr_data/immdata1.txt", 'mitcr')
 #  # equivalent to
@@ -28,19 +28,19 @@ data(twb)
 #  # Parse folder with MiGEC files.
 #  immdata <- parse.folder("~/migec_data/", 'migec')
 
-## ----eval=TRUE, echo=TRUE------------------------------------------------
+## ----eval=TRUE, echo=TRUE-----------------------------------------------------
 # No D genes is available here hence "" at "D.genes" and "-1" at positions.
 str(twa[[1]])
 
 str(twb[[1]])
 
-## ----eval=TRUE,echo=TRUE-------------------------------------------------
+## ----eval=TRUE,echo=TRUE------------------------------------------------------
 cloneset.stats(twb)
 
-## ----eval=TRUE,echo=TRUE-------------------------------------------------
+## ----eval=TRUE,echo=TRUE------------------------------------------------------
 repseq.stats(twb)
 
-## ----eval=TRUE,echo=TRUE-------------------------------------------------
+## ----eval=TRUE,echo=TRUE------------------------------------------------------
                             # How many clonotypes fill up approximately
 clonal.proportion(twb, 25)  # the 25% of the sum of values in 'Read.count'?
 
@@ -49,7 +49,7 @@ clonal.proportion(twb, 25)  # the 25% of the sum of values in 'Read.count'?
 top.proportion(twb, 10)   # to the overall number of reads?
 vis.top.proportions(twb)  # Plot this proportions.
 
-## ----eval=TRUE,echo=TRUE-------------------------------------------------
+## ----eval=TRUE,echo=TRUE------------------------------------------------------
                                 # What is a proportion of sequences which
                                 # have 'Read.count' <= 100 to the
 tailbound.proportion(twb, 100)  # overall number of reads?
@@ -65,13 +65,13 @@ clonal.space.homeostasis(twb[[1]])
 twb.space <- clonal.space.homeostasis(twb)
 vis.clonal.space(twb.space)
 
-## ----eval=TRUE,echo=TRUE-------------------------------------------------
+## ----eval=TRUE,echo=TRUE------------------------------------------------------
 imm.in <- get.inframes(twb) # Return all in-frame sequences from the 'twb'.
 
                             # Count the number of out-of-frame sequences
 count.outframes(twb, 5000)  # from the first 5000 sequences.
 
-## ----eval=TRUE,echo=TRUE-------------------------------------------------
+## ----eval=TRUE,echo=TRUE------------------------------------------------------
 imm.in <- get.frames(twb, 'in') # Similar to 'get.inframes(twb)'.
 
 count.frames(twb[[1]], 'all')   # Just return number of rows.
@@ -79,13 +79,13 @@ count.frames(twb[[1]], 'all')   # Just return number of rows.
 flag <- 'out'
 count.frames(twb, flag, 5000)   # Similar to 'count.outframes(twb, 5000)'.
 
-## ----eval=TRUE,echo=TRUE-------------------------------------------------
+## ----eval=TRUE,echo=TRUE------------------------------------------------------
 cmv <- data.frame(CDR3.amino.acid.sequence = c('CASSSANYGYTF', 'CSVGRAQNEQFF', 'CASSLTGNTEAFF', 'CASSALGGAGTGELFF', 'CASSLIGVSSYNEQFF'),
                   V.genes = c('TRBV4-1', 'TRBV4-1', 'TRBV4-1', 'TRBV4-1', 'TRBV4-1'), stringsAsFactors = F)
 
 cmv
 
-## ----eval=TRUE,echo=TRUE-------------------------------------------------
+## ----eval=TRUE,echo=TRUE------------------------------------------------------
 twb <- set.rank(twb)
 # Case 1.
 cmv.imm.ex <- 
@@ -114,7 +114,7 @@ cmv.imm.lev.v <-
                   .verbose = F)
 head(cmv.imm.lev.v)
 
-## ----eval=TRUE,echo=TRUE-------------------------------------------------
+## ----eval=TRUE,echo=TRUE------------------------------------------------------
 imm1.vs <- geneUsage(twb[[1]], HUMAN_TRBV)
 head(imm1.vs)
 
@@ -135,7 +135,7 @@ vis.gene.usage(twb, HUMAN_TRBJ, .main = 'twb J-usage column', .dodge = F, .ncol 
 ## ----eval=TRUE, echo=TRUE, message=FALSE, fig.align='center', fig.height=5, fig.width=7----
 vis.gene.usage(imm1.vs, NA, .main = 'twb[[1]] V-usage', .coord.flip = F)
 
-## ----eval=T, echo=TRUE, fig.align='center'-------------------------------
+## ----eval=T, echo=TRUE, fig.align='center'------------------------------------
                               # Transform "0:100" to distribution with Laplace correction 
 entropy(0:100, .laplace = 1)  # (i.e., add "1" to every value before transformation).
                               
@@ -151,7 +151,7 @@ pca.segments(twb, .genes = HUMAN_TRBV)  # Plot PCA results of V-segment usage.
 # Return object of class "prcomp"
 class(pca.segments(twb, .do.plot = F, .genes = HUMAN_TRBV))
 
-## ----eval=TRUE, echo=T, fig.align='center', warning=FALSE----------------
+## ----eval=TRUE, echo=T, fig.align='center', warning=FALSE---------------------
 # Equivalent to intersect(twb[[1]]$CDR3.nucleotide.sequence,
 #                         twb[[2]]$CDR3.nucleotide.sequence)
 repOverlap(twb[1:2], 'exact', 'nuc', .verbose = F)
@@ -164,7 +164,7 @@ repOverlap(twb, 'exact', 'aa', .vgene = T, .verbose = F)
 # Plot a heatmap of the number of shared clonotypes.
 vis.heatmap(repOverlap(twb, 'exact', 'aa', .vgene = T, .verbose = F), .title = 'twb - (ave)-intersection', .labs = '')
 
-## ----eval=TRUE, echo=TRUE------------------------------------------------
+## ----eval=TRUE, echo=TRUE-----------------------------------------------------
 # Get logic vector of shared elements, where
 # elements are tuples of CDR3 nucleotide sequence and corresponding V-segment
 imm.1.2 <- intersectLogic(twb[[1]], twb[[2]],
@@ -176,13 +176,13 @@ head(twb[[1]][imm.1.2, c('CDR3.amino.acid.sequence', 'V.gene')])
 twb.top <- top.cross(.data = twb, .n = seq(500, 10000, 500), .verbose = F, .norm = T)
 top.cross.plot(twb.top)
 
-## ----eval=TRUE, echo=TRUE, results='hold'--------------------------------
+## ----eval=TRUE, echo=TRUE, results='hold'-------------------------------------
 # Apply the Morisitas overlap index to the each pair of repertoires.
 # Use information about V genes (i.e. one CDR3 clonotype is equal to another
 # if and only if their CDR3 aa sequences are equal and their V genes are equal)
 repOverlap(twb, 'morisita', 'aa', 'read.count', .vgene = T, .verbose = F)
 
-## ----eval=TRUE, echo=TRUE------------------------------------------------
+## ----eval=TRUE, echo=TRUE-----------------------------------------------------
 # Compute shared repertoire of amino acid CDR3 sequences and V genes
 # which has been found in two or more people and return the Read.count column
 # of such clonotypes from each data frame in the input list.
@@ -190,22 +190,22 @@ imm.shared <- shared.repertoire(.data = twb, .type = 'avrc', .min.ppl = 2, .verb
 head(imm.shared)
 shared.representation(imm.shared)  # Number of shared sequences.
 
-## ----eval=TRUE, echo=TRUE, results='hold'--------------------------------
+## ----eval=TRUE, echo=TRUE, results='hold'-------------------------------------
 # Evaluate the diversity of clones by the ecological diversity index.
 repDiversity(twb, 'div', 'read.count')
 sapply(twb, function (x) diversity(x$Read.count))
 
-## ----eval=TRUE, echo=TRUE, results='hold'--------------------------------
+## ----eval=TRUE, echo=TRUE, results='hold'-------------------------------------
 # Compute the diversity as the inverse probability of choosing two similar clonotypes.
 repDiversity(twb, 'inv.simp', 'read.prop')
 sapply(twb, function (x) inverse.simpson(x$Read.proportion))
 
-## ----eval=TRUE, echo=TRUE, results='hold'--------------------------------
+## ----eval=TRUE, echo=TRUE, results='hold'-------------------------------------
 # Evaluate the skewness of clonal distribution.
 repDiversity(twb, 'gini.simp', 'read.prop')
 sapply(twb, function (x) gini.simpson(x$Read.proportion))
 
-## ----eval=TRUE, echo=TRUE, results='hold'--------------------------------
+## ----eval=TRUE, echo=TRUE, results='hold'-------------------------------------
 # Compute diversity of repertoire using Chao index.
 repDiversity(twb, 'chao1', 'read.count')
 sapply(twb, function (x) chao1(x$Read.count))
@@ -230,7 +230,7 @@ twb.shared <- repOverlap(twb, "exact", .norm = F, .verbose = F)
 vis.heatmap(twb.shared, .title = "Twins shared nuc clonotypes", 
             .labs = c("Sample in x", "Sample in y"), .legend = "# clonotypes")
 
-## ----eval=T, echo=TRUE, fig.align='center'-------------------------------
+## ----eval=T, echo=TRUE, fig.align='center'------------------------------------
 twb.js <- js.div.seg(twb, HUMAN_TRBV, .verbose = F) 
 vis.radarlike(twb.js, .ncol = 2)
 
@@ -256,13 +256,13 @@ km <- get.kmers(twb[[1]]$CDR3.amino.acid.sequence, .head = 100, .k = 7, .verbose
 d <- kmer.profile(km)
 vis.logo(d)
 
-## ----eval=TRUE, echo=TRUE------------------------------------------------
+## ----eval=TRUE, echo=TRUE-----------------------------------------------------
 # data(twb)
 twb.shared <- shared.repertoire(twb, .head = 1000, .verbose = F)
 G <- mutation.network(twb.shared)
 G
 
-## ----eval=TRUE, echo=TRUE------------------------------------------------
+## ----eval=TRUE, echo=TRUE-----------------------------------------------------
 # data(twb)
 # twb.shared <- shared.repertoire(twb, .head = 1000)
 # G <- mutation.network(twb.shared)
@@ -277,23 +277,23 @@ V(G)$twin.names <- get.group.names(G, "twins")
 V(G)$twin.names[1]
 V(G)$twin.names[300]
 
-## ----eval=TRUE, echo=TRUE------------------------------------------------
+## ----eval=TRUE, echo=TRUE-----------------------------------------------------
 # data(twb)
 # twb.shared <- shared.repertoire(twb, .head = 1000)
 # G <- mutation.network(twb.shared)
 head(mutated.neighbours(G, 1)[[1]])
 
-## ----eval=TRUE, echo=TRUE------------------------------------------------
+## ----eval=TRUE, echo=TRUE-----------------------------------------------------
 head(get.kmers(twb[[1]]$CDR3.amino.acid.sequence, 100, .meat = F, .verbose = F))
 head(get.kmers(twb[[1]], .meat = T, .verbose = F))
 
-## ----eval=TRUE, echo=TRUE------------------------------------------------
+## ----eval=TRUE, echo=TRUE-----------------------------------------------------
 revcomp(c('AAATTT', 'ACGTTTGGA'))
 cbind(bunch.translate(twb[[1]]$CDR3.nucleotide.sequence[1:10]),
       twb[[1]]$CDR3.amino.acid.sequence[1:10])
 gc.content(twb[[1]]$CDR3.nucleotide.sequence[1:10])
 
-## ----eval=TRUE, echo=TRUE------------------------------------------------
+## ----eval=TRUE, echo=TRUE-----------------------------------------------------
 codon.variants('LQ')
 translated.nucl.sequences(c('LQ', 'CASSLQ'))
 reverse.translation('LQ')
