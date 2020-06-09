@@ -121,10 +121,6 @@ head(imm1.vs)
 imm.vs.all <- geneUsage(twb, HUMAN_TRBV)
 imm.vs.all[1:10, 1:4]
 
-# Compute joint V-J counts
-imm1.vj <- geneUsage(twb[[1]], list(HUMAN_TRBV, HUMAN_TRBJ))
-imm1.vj[1:5, 1:5]
-
 ## ----eval=TRUE, echo=TRUE, message=FALSE, fig.align='center', fig.height=5, fig.width=7----
 # Put ".dodge = F" to get distinct plot for every data frame in the given list.
 vis.gene.usage(twb, HUMAN_TRBJ, .main = 'twb J-usage dodge', .dodge = T)
